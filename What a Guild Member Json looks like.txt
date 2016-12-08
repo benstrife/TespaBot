@@ -1,0 +1,283 @@
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Users\Ben>node C:\Users\Ben\Desktop\TespaBot\MemberCreate.js
+I am ready!
+The API returned an error: Error: Invalid values[1][1]: struct_value {
+  fields {
+    key: "guild"
+    value {
+      struct_value {
+        fields {
+          key: "members"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+        fields {
+          key: "channels"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+        fields {
+          key: "roles"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+        fields {
+          key: "available"
+          value {
+            bool_value: true
+          }
+        }
+        fields {
+          key: "id"
+          value {
+            string_value: "210605555998392321"
+          }
+        }
+        fields {
+          key: "name"
+          value {
+            string_value: "Ben Test Realm"
+          }
+        }
+        fields {
+          key: "icon"
+          value {
+            null_value: NULL_VALUE
+          }
+        }
+        fields {
+          key: "splash"
+          value {
+            null_value: NULL_VALUE
+          }
+        }
+        fields {
+          key: "region"
+          value {
+            string_value: "us-west"
+          }
+        }
+        fields {
+          key: "memberCount"
+          value {
+            number_value: 2.0
+          }
+        }
+        fields {
+          key: "presences"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+        fields {
+          key: "features"
+          value {
+            list_value {
+            }
+          }
+        }
+        fields {
+          key: "emojis"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+        fields {
+          key: "afkTimeout"
+          value {
+            number_value: 300.0
+          }
+        }
+        fields {
+          key: "afkChannelID"
+          value {
+            null_value: NULL_VALUE
+          }
+        }
+        fields {
+          key: "verificationLevel"
+          value {
+            number_value: 0.0
+          }
+        }
+        fields {
+          key: "joinedTimestamp"
+          value {
+            number_value: 1.480540279291E12
+          }
+        }
+        fields {
+          key: "ownerID"
+          value {
+            string_value: "105041932459184128"
+          }
+        }
+        fields {
+          key: "_rawVoiceStates"
+          value {
+            struct_value {
+              fields {
+                key: "_array"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+              fields {
+                key: "_keyArray"
+                value {
+                  null_value: NULL_VALUE
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  fields {
+    key: "user"
+    value {
+      struct_value {
+        fields {
+          key: "id"
+          value {
+            string_value: "105041932459184128"
+          }
+        }
+        fields {
+          key: "username"
+          value {
+            string_value: "Ben"
+          }
+        }
+        fields {
+          key: "discriminator"
+          value {
+            string_value: "3822"
+          }
+        }
+        fields {
+          key: "avatar"
+          value {
+            string_value: "88d05c1d61bf45b9337532c9b868294a"
+          }
+        }
+        fields {
+          key: "bot"
+          value {
+            bool_value: false
+          }
+        }
+      }
+    }
+  }
+  fields {
+    key: "_roles"
+    value {
+      list_value {
+      }
+    }
+  }
+  fields {
+    key: "serverDeaf"
+    value {
+      bool_value: false
+    }
+  }
+  fields {
+    key: "serverMute"
+    value {
+      bool_value: false
+    }
+  }
+  fields {
+    key: "speaking"
+    value {
+      bool_value: false
+    }
+  }
+  fields {
+    key: "nickname"
+    value {
+      null_value: NULL_VALUE
+    }
+  }
+  fields {
+    key: "joinedTimestamp"
+    value {
+      number_value: 1.470282677459E12
+    }
+  }
+}
+
+update
