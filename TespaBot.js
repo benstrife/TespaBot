@@ -1,6 +1,6 @@
 require('dotenv').config({path: '/Users/Ben/Desktop/TespaBot/vars.env'});
-
-
+//node-fetch module
+var fetch = require('node-fetch');
 // import the discord.js module
 const Discord = require('discord.js');
 // create an instance of a Discord Client, and call it bot
@@ -43,6 +43,18 @@ bot.on('message', message => {
 	  process.exit();
   }
 
+  if(message.content === '+help')
+  {
+	  message.author.sendMessage('here is our help list');
+	  message.delete();
+  }
+  
+  
+  if(message.content === 'This is hygenic!!!')
+  {
+	  message.reply('She showers with pantene. But Ive got watermelo\'n to keep me clean https://i.gyazo.com/03928bb39c5c827a2168233516e92cd2.png');
+  }
+  
 	if(message.content.substr(0,1) === 'q')
 	{
 		var slicedMsg = message.content.substr(1).toLowerCase();
@@ -147,6 +159,37 @@ bot.on('message', message => {
 		message.author.sendMessage('hey bae');
 	
 	}
+	
+	//overwatch stats
+	if(message.content.substr(0,1) === 'o')
+	{
+		//technowizard-1543
+		var slicedMsg = message.content.substr(2).split('#');
+		fetch('https://owapi.net/api/v3/u/' + slicedMsg[0] + '-' + slicedMsg[1] + '/stats')
+		.then(function(res) {
+			return res.text();
+		}).then(function(body) {
+			//console.log(body);
+			var user = JSON.parse(body);
+			if(user.us == null) {
+			  var mmr = -1;
+			}
+			else {
+				if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
+					var mmr = user.us.stats.competitive.overall_stats.comprank
+					if(mmr == null){
+					  mmr = 0;
+					}
+				}
+				else {
+					mmr = -2;
+				}
+			}
+			message.reply(slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
+			//message.author.sendMessage(message.content + '\n' + slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
+		});
+	}
+	
  
 });
 
