@@ -1,0 +1,37 @@
+TespaBot Functions:
+
++'b' 
+	-Exits the process
+
++'+help'
+	-Replies to the author a pm with list of commands / help text
+	-Deletes author's original '+help' message
+
++'This is hygenic!!!'
+	-Replies to the author with preset text and picture
+
++'q"key"'
+	-"key" is the key, the message is the value:
+		*about:You can learn more about Team Tespa on our website: https://tespa.org/about'
+		*tespa:You can find the standings here: https://compete.tespa.org/brackets
+		*casters:Jamerson @jetsetjamerson, Josh @PiscatorJosh, and Seamus @Seamoose1 are joining us on the caster desk today!
+		*google
+			*Google command will console log names from a tutorial document
+	-Replies to the author with the corresponding value to the key
+
++'!"key"'
+	-Pulls commands key/values from this doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=0
+	-Replies to the author with the corresponding value to the key
+
++'z'
+	-Updates this doc: 193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg
+	-Fills in A1:A3 with bae, a, lel
+
++Role ID '253628256312492046' (@Overwatch Admin) is mentioned
+	-Sends the Author a PM 'hey bae'
+
+'o "OverwatchID"'
+	-Gives the corresponding competitive MMR of "OverwatchID"
+	-"OverwatchID" is formated as such username#number
+	-Calls Overwatch Stats API to create a var "mmr"
+	-Replies to the author with '"OverwatchID"'s mmr is "mmr"'
