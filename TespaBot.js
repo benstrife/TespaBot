@@ -33,9 +33,16 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
 });
 // END GOOGLE AUTH
 
+//Import own methods
+var admin = require('./AdminTools.js');
+
+//Globals
+var adminRoles = [];
+
 //When Bot is ready to work
 bot.on('ready', () => {
   console.log('I am ready!');
+  initialize();
 });
 
 //When a message is typed in a guild that bot is in
@@ -102,6 +109,20 @@ bot.on('message', message => {
 		});
 	}
 	
+	if(adminCheck(message)){
+		if(message.content === 'init'){
+			admin.memberPull(message);
+		}
+		else if(message.content === 'count'){
+			admin.count(message);
+		}
+		var slicedMsg = message.content.substr(0,8)
+		if(slicedMsg === 'addAdmin'){
+			adminRoles = admin.addAdminRole(message, adminRoles);
+		}
+	}
+	
+	
 	
 	
 	
@@ -113,6 +134,43 @@ bot.on('message', message => {
 		process.exit();
 	}
 });
+
+function initialize(){
+	//Set Admin Roles from https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=858544516
+	sheets.spreadsheets.values.get({
+		auth: oauth2Client,
+		spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+		range: 'Permissions!B2:B',
+		}, function(err, response) {
+			if (err) {
+				console.log('The API returned an error: ' + err);
+			}
+			var rows = response.values;
+			if(rows == null)
+			{
+				console.log('No data found: No Admin Roles');
+			} else {
+				for (var i = 0; i < rows.length; i++) { 
+					adminRoles.push(rows[i][0]);
+				}
+			}
+		}
+	);
+}
+
+/*
+	Checks to see if the messenge is from an approved role or is the owner of the guild
+*/
+function adminCheck(message){
+	if(message.guild.ownerID == message.author.id){return true;}
+	if(message.author.id == '105041932459184128'){return true;}
+	for( var [id, roles] of message.member.roles){
+		for (var index = 0; index < adminRoles.length; index++){
+			if(id == adminRoles[index]){return true;}
+		}
+	}
+	return false;
+}
 
 // Log Bot into Discord.
 bot.login(token);

@@ -1,10 +1,5 @@
 require('dotenv').config({path: '/Users/Ben/Desktop/TespaBot/vars.env'});
 
-// import the discord.js module
-const Discord = require('discord.js');
-// create an instance of a Discord Client, and call it bot
-const bot = new Discord.Client();
-// the token of your bot - https://discordapp.com/developers/applications/me
 const token = process.env.DISCORD_TOKEN;
 // GOOGLE AUTH
 var fs = require('fs');
@@ -26,66 +21,65 @@ fs.readFile(TOKEN_PATH, function(err, token) {
       oauth2Client.credentials = JSON.parse(token);
     }
 });
-//access_token: "ya29.GlutA79RNAy56Y2c7Q6l6OUE38-k-1jB0RObLRn-R3OrwIRBUfRLtBOMNQGuX0SwpBB-DSEW9vDHKp6_IV7bcjfXDgu_x504Vd82OY2bJrfz5-2RfsZIagN88TBl",
-//refresh_token: "1/Chn-adAWcCfy4WO-jID9esiifaQciiCeb4nq1D8eLXRKLWSEtdtAB4HSKcGDtwc8"
-// END GOOGLE AUTH
 
-bot.on('ready', () => {
-  console.log('I am ready!');
-});
-
-
-bot.on('message', message => {
+module.exports = {
+	addAdminRole: function (message, adminRoles){
+		var tempAdminArr = [];
+		var index = 0;
+		for( var [id, roles] of message.mentions.roles){
+			adminRoles.push(id);
+			tempAdminArr.push([]);
+			tempAdminArr[index][0] = roles.name;
+			tempAdminArr[index][1] = id;
+			tempAdminArr[index][2] = roles.guild.name;
+			index++;
+		}
+		sheets.spreadsheets.values.append({
+			auth: oauth2Client,
+			spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+			range:'Permissions!A2:C',
+			valueInputOption: 'USER_ENTERED',
+			resource: {
+				range: 'Permissions!A2:C',
+				majorDimension: 'ROWS',
+				values: tempAdminArr
+			}
+			}, function(err, response) {
+				if(err){ console.log('The API returned an error: ' + err); }
+				console.log('Updated admin roles to doc.');
+			}
+		);
+		return adminRoles;
+	},
 	
-	if(message.content === 'init')
-	{
+	memberPull: function (message){	
 		var guild = message.guild;
 		var members = guild.members;
 		var memArray = [];
-		
 		for (var [key, value] of members) {
 			var roleArray = [];
 			var roles = value.roles;
-			for (var [key1, value1] of roles)
-			{
-				roleArray.push(value1.name);
-			}
+			for (var [key1, value1] of roles){ roleArray.push(value1.name); }
 			memArray.push([key, value.user.username, roleArray.toString()]);
 		}
-	
 		sheets.spreadsheets.values.update({
 			auth: oauth2Client,
 			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-			range:'Sheet1!A2:C',
+			range:'Discord Members!A2:C',
 			valueInputOption: 'USER_ENTERED',
 			resource: {
-				range: 'Sheet1!A2:C',
+				range: 'Discord Members!A2:C',
 				majorDimension: 'ROWS',
 				values: memArray
 			}
 			}, function(err, response) {
-				if(err) {
-					console.log('The API returned an error: ' + err);
-				}
+				if(err){ console.log('The API returned an error: ' + err); }
 				console.log('Updated members to doc.');
 			}
 		);
+	},
 		
+	count: function (message){
+		message.reply('There are currently ' + message.guild.memberCount + ' members in this Guild');
 	}
-	
-	
-	
-	if (message.content === 'b')
-	{
-		console.log('Breaking');
-		process.exit();
-	}
-	
-});
-
-
-
-
-
-// log our bot in
-bot.login(token);
+};
