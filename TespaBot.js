@@ -34,7 +34,8 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
 // END GOOGLE AUTH
 
 //Import own methods
-var admin = require('./AdminTools.js');
+var adminTools = require('./AdminTools.js');
+var memberTools = require('./MemberTools.js');
 
 //Globals
 var adminRoles = [];
@@ -54,78 +55,33 @@ bot.on('message', message => {
 	*/
 	if(message.content.substr(0,1) === '!')
 	{
-		var slicedMsg = message.content.substr(1).toLowerCase();
-		sheets.spreadsheets.values.get({
-			auth: oauth2Client,
-			spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-			range: 'OW Commands!A2:B',
-			}, function(err, response) {
-				if (err) {
-					console.log('The API returned an error: ' + err);
-				}
-				var rows = response.values;
-				if(rows.length == 0)
-				{
-					console.log('No data found');
-				} else {
-					for (var i = 0; i < rows.length; i++) {
-						var row = rows[i];
-						if (slicedMsg === row[0])
-						{
-							message.reply(row[1]);
-						}
-					}
-				}
-			}
-		);
-	}
-	
-	if(message.content.substr(0,1) === 'o')
-	{
-		//technowizard-1543
-		var slicedMsg = message.content.substr(2).split('#');
-		fetch('https://owapi.net/api/v3/u/' + slicedMsg[0] + '-' + slicedMsg[1] + '/stats')
-		.then(function(res) {
-			return res.text();
-		}).then(function(body) {
-			//console.log(body);
-			var user = JSON.parse(body);
-			if(user.us == null) {
-			  var mmr = -1;
-			}
-			else {
-				if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
-					var mmr = user.us.stats.competitive.overall_stats.comprank
-					if(mmr == null){
-					  mmr = 0;
-					}
-				}
-				else {
-					mmr = -2;
-				}
-			}
-			message.reply(slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
-			//message.author.sendMessage(message.content + '\n' + slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
-		});
+		if(message.content.substr(1,4) === 'oMMR'){
+			memberTools.overwatchMmr(message);
+		}
+		//Pull commands from Google Doc
+		else {
+			memberTools.googleCommand(message);
+		}
 	}
 	
 	if(adminCheck(message)){
-		if(message.content === 'init'){
-			admin.memberPull(message);
+		if(message.content === '!memberPull'){
+			adminTools.memberPull(message);
 		}
-		else if(message.content === 'count'){
-			admin.count(message);
+		else if(message.content === '!count'){
+			adminTools.count(message);
 		}
-		var slicedMsg = message.content.substr(0,8)
-		if(slicedMsg === 'addAdmin'){
-			adminRoles = admin.addAdminRole(message, adminRoles);
+		else if(message.content === '!createChannels'){
+			adminTools.createChannels(message);
+		}
+		else if(message.content === '!createRoles'){
+			adminTools.createRoles(message);
+		}
+		var slicedAAMsg = message.content.substr(0,9)
+		if(slicedAAMsg === '!addAdmin'){
+			adminRoles = adminTools.addAdminRole(message, adminRoles);
 		}
 	}
-	
-	
-	
-	
-	
 	
 	//Break REMOVE
 	if (message.content === 'b')
