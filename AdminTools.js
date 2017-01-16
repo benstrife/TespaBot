@@ -23,6 +23,38 @@ fs.readFile(TOKEN_PATH, function(err, token) {
 });
 
 module.exports = {
+	assignRoles: function (message){
+		console.log(displayName(message.member));
+		if(!message.member.voiceChannel){
+			console.log(message.author.username + ' is not in a voice channel for that server');
+		}
+		else{
+			console.log(message.member.voiceChannel.name);
+		}
+	},
+	
+	helpQueueStatus: function (message, playersInLine){
+		if(playersInLine.length == 1){message.author.sendMessage('There is ' + playersInLine.length + ' player in the help queue.');}
+		else {message.author.sendMessage('There are ' + playersInLine.length + ' players in the help queue.');}
+	},
+	
+	nextInLine: function (message, playersInLine){
+		if(playersInLine.length == 0){
+			message.author.sendMessage('There are no players in the help queue.');
+			return playersInLine;
+		}
+		if(!message.member.voiceChannel){
+			message.author.sendMessage('Please join a voice channel in server: ' + message.channel.guild);
+			return playersInLine;
+		}
+		var customer = playersInLine.shift();
+		message.member.voiceChannel.createInvite({maxAge: 300})
+			.then(invite => {
+					customer.sendMessage(displayName(message.member) + ' will see you right now in voice channel \'' + message.member.voiceChannel.name + '\' in server \'' + message.channel.guild + '\'\r' + 'Here is an invite to the channel (invite will expire in five minutes): ' + invite.toString());
+			});
+		return playersInLine;
+	},
+	
 	addAdminRole: function (message, adminRoles){
 		var tempAdminArr = [];
 		var index = 0;
@@ -178,6 +210,11 @@ function updateCell(cellRow, cellValue){
 			}
 		}
 	);
+}
+
+function displayName(member){
+	if(member.nickname){return member.nickname;}
+	else{return member.user.username;}
 }
 
 function getRoleArray(msgGuild){

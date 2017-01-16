@@ -39,6 +39,8 @@ var memberTools = require('./MemberTools.js');
 
 //Globals
 var adminRoles = [];
+const PREFIX = '!';
+var playersInLine = [];
 
 //When Bot is ready to work
 bot.on('ready', () => {
@@ -48,15 +50,22 @@ bot.on('ready', () => {
 
 //When a message is typed in a guild that bot is in
 bot.on('message', message => {
-	
+	if(bot.user.id === message.author.id) return;
+	if(message.channel.type != 'text') return;
 	/* 	Commands
 		When ! is the first character of message, it will pull from below document and reply with assossicated message.
 		Doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=0
 	*/
-	if(message.content.substr(0,1) === '!')
+	if(message.content[0] === PREFIX)
 	{
 		if(message.content.substr(1,4) === 'oMMR'){
 			memberTools.overwatchMmr(message);
+		}
+		else if(message.content === '!myOpponent'){
+			memberTools.myOpponent(message);
+		}
+		else if(message.content === '!help'){
+			playersInLine = memberTools.helpQueue(message, playersInLine);
 		}
 		//Pull commands from Google Doc
 		else {
@@ -67,6 +76,15 @@ bot.on('message', message => {
 	if(adminCheck(message)){
 		if(message.content === '!memberPull'){
 			adminTools.memberPull(message);
+		}
+		else if(message.content === 'a'){
+			adminTools.assignRoles(message);
+		}
+		else if(message.content === '!nextInLine'){
+			playersInLine = adminTools.nextInLine(message, playersInLine);
+		}
+		else if(message.content === '!queueNum'){
+			adminTools.helpQueueStatus(message, playersInLine);
 		}
 		else if(message.content === '!count'){
 			adminTools.count(message);
