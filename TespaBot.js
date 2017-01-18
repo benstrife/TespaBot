@@ -1,5 +1,5 @@
 // DOTENV module
-require('dotenv').config({path: '/Users/Ben/Desktop/TespaBot/vars.env'});
+require('dotenv').config({path: './vars.env'});
 // node-fetch module
 var fetch = require('node-fetch');
 // discord.js module
