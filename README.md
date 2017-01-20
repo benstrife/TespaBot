@@ -86,10 +86,10 @@ After creating the server, enter the following link into your web browser:
 ```
 https://discordapp.com/api/oauth2/authorize?client_id=[CLIENT_ID]&scope=bot&permissions=0
 ```
-where you replace [CLIENT_ID] (removing the brackets) with your bot's client ID,
-which is found at the top of your app's Discord developer page. When done properly,
-a dialogue with open in Discord asking which server to add your bot to. Select
-your newly created server and the bot will be added to it.
+where you replace [CLIENT_ID] with your bot's client ID, which is found at the
+top of your app's Discord developer page. When done properly, a dialogue with
+open in Discord asking which server to add your bot to. Select your newly created
+server and the bot will be added to it.
 
 ## Testing the bot
 
