@@ -140,7 +140,147 @@ module.exports = {
 		);
 		
 		
-	}
+	},
+    
+    /*
+    * Reschedule
+    */
+    reschedule: function (message){
+        //Confirm time is correct format
+        const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
+        var time = message.content.substr(12)
+        var regTime = timeFormat.exec(message.content.substr(12));
+        if(time == 'approve'){
+            rescheduleApproval(message);
+            return;
+        }
+        else if(time == 'reject'){
+            rescheduleReject(message);
+            return;
+        }
+        else if(!regTime){
+            message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)'); 
+            return;
+        }
+        
+        var tempArray = [message.channel.name, time];
+        var sheetArray = [tempArray];
+        sheets.spreadsheets.values.append({
+        auth: oauth2Client,
+        spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+        range:'Reschedule!A2:C',
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+            range: 'Reschedule!A2:C',
+            majorDimension: 'ROWS',
+            values: sheetArray
+        }
+        }, function(err, response) {
+            if(err){ console.log('The API returned an error: ' + err); }
+            console.log('Appended Reschedule command to doc.');
+        });
+    }
 };
 
-//Hel
+//Helper Functions
+
+function rescheduleApproval(message){
+    sheets.spreadsheets.values.get({
+        auth: oauth2Client,
+        spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+        range: 'Reschedule!A2:C',
+        }, function(err, response) {
+            if (err) {
+                console.log('The API returned an error: ' + err);
+            }
+            var rows = response.values;
+            if(rows.length == 0)
+            {
+                console.log('No data found');
+            } else {
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i];
+                    if(message.channel.name == row[0]){
+                        if(row[2] == 'Yes'){
+                            message.reply('Your reschedule has already been approved.');
+                            return;
+                        }
+                        else if(row[2] == 'No'){
+                            message.reply('Your reschedule has been declined previously, we will now approve the reschedule.');    
+                        }
+                        var arr = ['Yes'];
+                        var arrarr = [arr];
+                        var index = i+2;
+                        sheets.spreadsheets.values.update({
+                            auth: oauth2Client,
+                            spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+                            range:'Reschedule!C'+index,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                range: 'Reschedule!C'+index,
+                                majorDimension: 'ROWS',
+                                values: arrarr
+                            }
+                            }, function(err, response) {
+                                if(err){ console.log('The API returned an error: ' + err); }
+                                console.log('Approved Reschdule to doc.');
+                                message.reply('Your reschedule has been approved.');
+                            });
+                    }
+                }
+                message.reply('You have not submitted a time for rescheduling');
+            }
+        }
+    );
+}
+
+function rescheduleReject(message){
+    sheets.spreadsheets.values.get({
+        auth: oauth2Client,
+        spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+        range: 'Reschedule!A2:C',
+        }, function(err, response) {
+            if (err) {
+                console.log('The API returned an error: ' + err);
+            }
+            var rows = response.values;
+            if(rows.length == 0)
+            {
+                console.log('No data found');
+            } else {
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i];
+                    if(message.channel.name == row[0]){
+                        if(row[2] == 'Yes'){
+                            message.reply('Your reschedule was previously approved, we will now reject your reschedule.');
+                        }
+                        else if(row[2] == 'No'){
+                            message.reply('Your reschedule has already been rejected. Please notify an admin');
+                            return;
+                        }
+                        var arr = ['No'];
+                        var arrarr = [arr];
+                        var index = i+2;
+                        sheets.spreadsheets.values.update({
+                            auth: oauth2Client,
+                            spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+                            range:'Reschedule!C'+index,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: {
+                                range: 'Reschedule!C'+index,
+                                majorDimension: 'ROWS',
+                                values: arrarr
+                            }
+                            }, function(err, response) {
+                                if(err){ console.log('The API returned an error: ' + err); }
+                                console.log('Approved Reschdule to doc.');
+                                message.reply('Your reschedule has been rejected! Please contact an admin for the next step forward.');
+                                return;
+                            });
+                    }
+                }
+                message.reply('You have not submitted a time for rescheduling');
+            }
+        }
+    );
+}
