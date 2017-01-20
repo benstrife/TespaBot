@@ -26,10 +26,10 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
       console.log('lmao get new token');
 	  var gTokenInit = require('GTokenInit.js');
 	  gTokenInit.getNewToken(oauth2Client);
-    } 
-      
+    }
+
 	oauth2Client.credentials = JSON.parse(googleToken);
-    
+
 });
 // END GOOGLE AUTH
 
@@ -75,7 +75,7 @@ bot.on('message', message => {
                 {
                     console.log('No data found: No members have been found, please check the sheet.');
                 } else {
-                    for (var i = 0; i < rows.length; i++) { 
+                    for (var i = 0; i < rows.length; i++) {
                         var row = rows[i];
                         if(row[0]==message.author.id && !row[2]){
                             var emailRG = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
@@ -113,10 +113,10 @@ bot.on('message', message => {
         *   Whatever else you want for DMs
         */
     }
-    
+
 	/* 	Text Channel Commands
-		When ! is the first character of message, 
-		
+		When ! is the first character of message,
+
 	*/
 	if(message.content[0] === PREFIX)
 	{
@@ -245,7 +245,7 @@ bot.on('message', message => {
 			adminRoles = adminTools.addAdminRole(message, adminRoles);
 		}
 	}
-	
+
 	//Break REMOVE
 	if (message.content === 'b')
 	{
@@ -276,7 +276,7 @@ bot.on('guildMemberAdd', member => {
             if(err){ console.log('The API returned an error: ' + err); }
             console.log('Appended new member id & username command to doc.');
         });
-    
+
 });
 
 /*
@@ -296,7 +296,7 @@ function initialize(){
 			{
 				console.log('No data found: No Admin Roles');
 			} else {
-				for (var i = 0; i < rows.length; i++) { 
+				for (var i = 0; i < rows.length; i++) {
 					adminRoles.push(rows[i][0]);
 				}
                 console.log('Admin Roles initialized');
@@ -310,9 +310,10 @@ function initialize(){
 */
 function adminCheck(message){
 	if(message.channel.type != 'text') return;
-    if(message.guild.ownerID == message.author.id){return true;}
+  if(message.guild.ownerID == message.author.id){return true;}
 	if(message.author.id == '105041932459184128'){return true;}
-	for( var [id, roles] of message.member.roles){
+
+	for(let [id, roles] of message.member.roles){
 		for (var index = 0; index < adminRoles.length; index++){
 			if(id == adminRoles[index]){return true;}
 		}
