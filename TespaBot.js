@@ -51,7 +51,6 @@ bot.on('ready', () => {
 
 /*
 * When a message is typed in a guild that bot is in
-* 
 */
 bot.on('message', message => {
 	if(bot.user.id === message.author.id) return;
@@ -107,61 +106,140 @@ bot.on('message', message => {
                             );
                         }
                     }
-                    console.log('Admin Roles initialized');
                 }
             }
         );
+        /*
+        *   Whatever else you want for DMs
+        */
     }
     
 	/* 	Text Channel Commands
-		When ! is the first character of message, it will pull from below document and reply with assossicated message.
-		Doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=0
+		When ! is the first character of message, 
+		
 	*/
 	if(message.content[0] === PREFIX)
 	{
+        /*
+        *   Calls Overwatch API to get the competitive MMR of the written player
+        *   !oMMR username#idnumber
+        *   @everyone in Anywhere
+        */
 		if(message.content.substr(1,4) === 'oMMR'){
 			memberTools.overwatchMmr(message);
 		}
+        /*
+        *   Looks up in a google sheet for the opponent of the author.
+        *   !myOpponent
+        *   @teamroles in Anywhere
+        */
 		else if(message.content === '!myOpponent'){
 			memberTools.myOpponent(message);
 		}
+        /*
+        *   Adds a reschedule time when called in match channel. Can be called with modifier 'approve' or 'reject' to approve or reject the proposed time
+        *   !reschedule DD/MM/YY 00:00 ; !reschedule approve ; !reschedule reject
+        *   @teamroles in Match Channel
+        */
         else if(message.content.substr(0,11) === '!reschedule'){
             memberTools.reschedule(message);
         }
+        /*
+        *   Adds author to a queue. Queue is for help from an admin.
+        *   !help
+        *   @everyone in Anywhere
+        */
 		else if(message.content === '!help'){
 			playersInLine = memberTools.helpQueue(message, playersInLine);
 		}
-		//Pull commands from Google Doc
+		/*
+        *   Pull commands from Google Doc if command is not hard-coded above.
+        *   Doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=0
+        *   !command
+        *   @everyone in Anywhere
+        */
 		else {
 			memberTools.googleCommand(message);
 		}
 	}
-	
+	/*
+    *   Only commands that can be called by approved roles or server owner
+    */
 	if(adminCheck(message)){
+        /*
+        *   Pulls information on all members in a guild. Writes [user ID, username, all roles]
+        *   !memberPull
+        *   @adminroles in Anywhere
+        */
 		if(message.content === '!memberPull'){
 			adminTools.memberPull(message);
 		}
+        /*
+        *   DEFUNCT
+        *
+        *
+        */
 		else if(message.content === 'a'){
 			adminTools.assignRoles(message);
 		}
+        /*
+        *   DEFUNCT
+        *
+        *
+        */
         else if(message.content === 'getBnet'){
             adminTools.getBnet(message);
         }
+        /*
+        *   Gets the first member in the help queue (PlayersInLine) and sends them to an invite to the voice channel the admin is currently in.
+        *   If the admin is not in a voice channel, it tells the admin to get in a voice channel
+        *   !nextInLine
+        *   @adminroles in Any text channel in a Voice channel
+        */
 		else if(message.content === '!nextInLine'){
 			playersInLine = adminTools.nextInLine(message, playersInLine);
 		}
+        /*
+        *   Gets the number of players in the help queue (PlayersInLine)
+        *   !queueNum
+        *   @adminroles in Anywhere
+        */
 		else if(message.content === '!queueNum'){
 			adminTools.helpQueueStatus(message, playersInLine);
 		}
+        /*
+        *   Writes the number of members in the Guild.
+        *   !count
+        *   @adminroles in Anywhere
+        */
 		else if(message.content === '!count'){
 			adminTools.count(message);
 		}
+        /*
+        *   Creates channels based on the matches in a google document and then auto permissions members with the team roles
+        *   Generates an invite to the voice channel and adds to the google document.
+        *   Doc: https://docs.google.com/spreadsheets/d/193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg/edit#gid=1636783904
+        *   !createChannels
+        *   @adminroles in Anywhere
+        */
 		else if(message.content === '!createChannels'){
 			adminTools.createChannels(message);
 		}
+        /*
+        *   Creates roles based on all teams that exist in a google doc.
+        *   Doc: https://docs.google.com/spreadsheets/d/193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg/edit#gid=192302676
+        *   !createRoles
+        *   @adminroles in Anywhere
+        */
 		else if(message.content === '!createRoles'){
 			adminTools.createRoles(message);
 		}
+        /*
+        *   Adds all roles that are mentioned in the message to the admins role google doc.
+        *   Doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=858544516
+        *   !addAdmin @role @optroles
+        *   @adminroles in Anywhere
+        */
 		var slicedAAMsg = message.content.substr(0,9)
 		if(slicedAAMsg === '!addAdmin'){
 			adminRoles = adminTools.addAdminRole(message, adminRoles);
