@@ -186,7 +186,17 @@ module.exports = {
 				}
 			}
 		);
-	}
+	},
+    
+    getBnet: function (message){
+        message.author.fetchProfile()
+            .then(profile => {
+                var conn = profile.connections;
+                for( var i of conn){
+                    console.log(conn[i].type);
+                }  
+            }).catch(console.log);
+    }
 };
 
 /*
