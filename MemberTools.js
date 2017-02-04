@@ -264,10 +264,27 @@ module.exports = {
         });
     },
 
+    /**
+    * Display available commands in reply to calling user.
+    *
+    * PARAMETERS
+    *   message - the message read by the bot
+    *   params - unused in this function
+    */
     displayCommands: function(message, params){
+      // Grab the channel name immediately
       let channelName = message.channel.name;
+
+      // Assume we are not in a game-specific channel
       var rangePrefix = "General";
 
+      // List of commands avaialable
+      var commands = [];
+
+      // Response string to user
+      var res = "commands available in this channel: ";
+
+      // Determine which game-specific channel we're in (if any)
       switch(channelName.split('_')[0]){
         case "hearthstone":
           rangePrefix = "HS";
@@ -279,29 +296,60 @@ module.exports = {
           rangePrefix = "OW";
           break;
         default:
+          // Since we assumed we weren't in a game-specific channel, just break
           break;
       }
 
+      // Retrieve the game-specific sheet we're in (general otherwise)
       sheets.spreadsheets.values.get({
 				auth: oauth2Client,
 				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
 				range: rangePrefix + ' Commands!A2:B',
-				}, function(err, response) {
+				},
+        function(err, response) {
 					if (err) {
 						console.log('The API returned an error: ' + err);
 					}
+          // Get an array of rows, each element a command in the sheet
 					var rows = response.values;
-          var response = "commands available in this channel: ";
-          for(var i = 0; i < rows.length; i++){
-            var row = rows[i];
-            response += row[0] + ", ";
-          }
-          response = response.substring(0, response.length-2);
 
-          message.reply(response);
-        }
-      );
-    }
+          // Get commands in the game-specific channel
+          for(var i = 0; i < rows.length; i++){
+            commands.push(rows[i][0]);
+          }
+
+          // If we are in a specific channel, still read off general commands
+          // that were not overridden
+          if(rangePrefix != "General"){
+            sheets.spreadsheets.values.get({
+      				auth: oauth2Client,
+      				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+      				range: 'General Commands!A2:B',
+      				},
+              function(err, response) {
+      					if (err) {
+      						console.log('The API returned an error: ' + err);
+      					}
+
+      					var rows = response.values;
+
+                for(var i = 0; i < rows.length; i++){
+                  // If the command we are looking at hasn't been logged yet
+                  // (aka not overridden)
+                  if(commands.indexOf(rows[i][0]) == -1){
+                    commands.push(rows[i][0]);
+                  }
+                }
+                // Concatenate all commands to our response string
+                res += commands.join(", ");
+
+                // Reply to the user with our response
+                message.reply(res);
+              });
+            }
+          }
+        );
+      }
 };
 
 //Helper Functions
