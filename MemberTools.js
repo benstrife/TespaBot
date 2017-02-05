@@ -36,44 +36,126 @@ module.exports = {
 		message.reply('You are now position #' + playersInLine.length + ' in queue');
 		return playersInLine;
 	},
-	
-	overwatchMmr: function (message){
-		//technowizard-1543
-		var slicedMsg = message.content.substr(6).split('#');
-		console.log(slicedMsg);
-		console.log(slicedMsg[0] + '-' + slicedMsg[1]);
-		fetch('https://owapi.net/api/v3/u/' + slicedMsg[0] + '-' + slicedMsg[1] + '/stats')
-		.then(function(res) {
-			return res.text();
-		}).then(function(body) {
-			//console.log(body);
-			var user = JSON.parse(body);
-			if(user.us == null) {
-			  var mmr = -1;
-			}
-			else {
-				if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
-					var mmr = user.us.stats.competitive.overall_stats.comprank
-					if(mmr == null){
-					  mmr = 0;
-					}
-				}
-				else {
-					mmr = -2;
-				}
-			}
-			console.log(slicedMsg[0] + '-' + slicedMsg[1]);
-			message.reply(slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
-			//message.author.sendMessage(message.content + '\n' + slicedMsg[0] + '#' + slicedMsg[1] + '\'s mmr is: ' + mmr);
-		});
+
+	overwatchMmr: function(message, params){
+    // Retrieve player's BattleTag
+		var playerTag = params[0];
+
+    // If the player's BattleTag is undefined,
+    // the user most likely did not enter one
+    if(playerTag == undefined){
+      message.reply('correct usage: !oMMR PlayerName#XXXX');
+      return;
+    }
+
+    // Split the player's BattleTag
+    var playerName = playerTag.split('#')[0];
+    var playerNum = playerTag.split('#')[1];
+
+		console.log('Finding Overwatch MMR for ' + playerTag);
+
+    // Retrieve the player's stats for this season
+	  fetch('https://owapi.net/api/v3/u/' + playerName + '-' + playerNum + '/stats')
+    .then(function(res){
+      return res.text();
+    }).then(function(body){
+      // Parse the webpage response as JSON
+      var user = JSON.parse(body);
+      // If they don't have a US account, alert the user
+  		if(user.us == null) {
+  		  message.reply(playerTag + " does not have any games in North America.");
+        return;
+  		}
+  		else {
+  			if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
+  				var mmr = user.us.stats.competitive.overall_stats.comprank;
+  				if(mmr == null){
+  				  message.reply(playerTag + " has not placed in ranked this season.");
+            return
+  				}
+  			}
+  			else {
+  				message.reply(playerTag + "\'s stats cannot be parsed.");
+          return
+  			}
+  		}
+
+  		message.reply(playerTag +'\'s mmr is: ' + mmr);
+    });
 	},
-	
-	googleCommand: function (message){
-		var slicedGMsg = message.content.substr(1).toLowerCase();
+
+  heroesMMR: function(message, params){
+    // Retrieve player's BattleTag
+		var playerTag = params[0];
+    var leagues = ["Master", "Diamond", "Platinum", "Gold", "Silver", "Bronze"];
+
+    // If the player's BattleTag is undefined,
+    // the user most likely did not enter one
+    if(playerTag == undefined){
+      message.reply('correct usage: !hMMR PlayerName#XXXX');
+      return;
+    }
+
+    // Split the player's BattleTag
+    var playerName = playerTag.split('#')[0];
+    var playerNum = playerTag.split('#')[1];
+
+		console.log('Finding Heroes MMR for ' + playerTag);
+
+    // Retrieve the player's stats for this season
+	  fetch('https://api.hotslogs.com/Public/Players/1/' + playerName + '_' + playerNum)
+    .then(function(res){
+      return res.text();
+    }).then(function(body){
+      // Parse the webpage response as JSON
+      var user = JSON.parse(body);
+
+      var response = "";
+
+      if(user == null){
+        message.reply(playerTag + ' could not be found.');
+      }
+
+      // Construct a single response by concatenating all of a player's MMRs
+      for(var i = 0; i < user.LeaderboardRankings.length; i++){
+        if(user.LeaderboardRankings[i].LeagueID == null){
+          continue;
+        }
+        response += user.LeaderboardRankings[i].GameMode + ": "
+                    + leagues[user.LeaderboardRankings[i].LeagueID]
+                    + "[" + user.LeaderboardRankings[i].CurrentMMR + "]";
+        response += "; ";
+      }
+
+      // Remove the last '; ' from the response then reply
+      message.reply(response.substring(0, response.length-2));
+    });
+	},
+
+	googleCommand: function (message, params){
+    let channelName = message.channel.name;
+    var rangePrefix = "General";
+
+    switch(channelName.split('_')[0]){
+      case "hearthstone":
+        rangePrefix = "HS";
+        break;
+      case "heroes":
+        rangePrefix = "HOTS";
+        break;
+      case "overwatch":
+        rangePrefix = "OW";
+        break;
+      default:
+        break;
+    }
+
+		var slicedGMsg = message.content.substring(1).toLowerCase();
+      // Try once within a specific game's command list
 			sheets.spreadsheets.values.get({
 				auth: oauth2Client,
 				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-				range: 'OW Commands!A2:B',
+				range: rangePrefix + ' Commands!A2:B',
 				}, function(err, response) {
 					if (err) {
 						console.log('The API returned an error: ' + err);
@@ -88,17 +170,18 @@ module.exports = {
 							if (slicedGMsg === row[0])
 							{
 								message.reply(row[1]);
+                return;
 							}
 						}
 					}
 				}
 			);
 	},
-	
+
 	/*
 		Finds the team's opponent and sends a reply
 	*/
-	myOpponent: function (message){
+	myOpponent: function (message, params){
 		var teams = [];
 		var foundBoolean;
 		for(var [id,role] of message.member.roles){
@@ -121,30 +204,30 @@ module.exports = {
 						var row = rows[i];
 						for(var j = 0; j < teams.length; j++){
 							console.log(row[0] + ' ' + row[1] + ' ' + teams[j] );
-							if (teams[j] == row[0]){ 
-								message.reply('Your Opponent is: ' + row[1]); 
+							if (teams[j] == row[0]){
+								message.reply('Your Opponent is: ' + row[1]);
 								foundBoolean = 1;
 								return;
 							}
 							else if(teams[j] == row[1]){
 								message.reply('Your Opponent is: ' + row[0]);
 								foundBoolean = 1;
-								return;								
+								return;
 							}
 						}
-					}					
+					}
 					message.reply('You do not have an opponent this week. If you think this is an error, please contact an admin');
 				}
 			}
 		);
-		
-		
+
+
 	},
-    
+
     /*
     * Reschedule
     */
-    reschedule: function (message){
+    reschedule: function (message, params){
         //Confirm time is correct format
         const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
         var time = message.content.substr(12)
@@ -158,10 +241,10 @@ module.exports = {
             return;
         }
         else if(!regTime){
-            message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)'); 
+            message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)');
             return;
         }
-        
+
         var tempArray = [message.channel.name, time];
         var sheetArray = [tempArray];
         sheets.spreadsheets.values.append({
@@ -179,6 +262,45 @@ module.exports = {
             console.log('Appended Reschedule command to doc.');
 			message.reply('Reschedule request recieved! Waiting on opponent approval or rejection');
         });
+    },
+
+    displayCommands: function(message, params){
+      let channelName = message.channel.name;
+      var rangePrefix = "General";
+
+      switch(channelName.split('_')[0]){
+        case "hearthstone":
+          rangePrefix = "HS";
+          break;
+        case "heroes":
+          rangePrefix = "HOTS";
+          break;
+        case "overwatch":
+          rangePrefix = "OW";
+          break;
+        default:
+          break;
+      }
+
+      sheets.spreadsheets.values.get({
+				auth: oauth2Client,
+				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+				range: rangePrefix + ' Commands!A2:B',
+				}, function(err, response) {
+					if (err) {
+						console.log('The API returned an error: ' + err);
+					}
+					var rows = response.values;
+          var response = "commands available in this channel: ";
+          for(var i = 0; i < rows.length; i++){
+            var row = rows[i];
+            response += row[0] + ", ";
+          }
+          response = response.substring(0, response.length-2);
+
+          message.reply(response);
+        }
+      );
     }
 };
 
@@ -206,7 +328,7 @@ function rescheduleApproval(message){
                             return;
                         }
                         else if(row[2] == 'No'){
-                            message.reply('Your reschedule has been declined previously, we will now approve the reschedule.');    
+                            message.reply('Your reschedule has been declined previously, we will now approve the reschedule.');
                         }
                         var arr = ['Yes'];
                         var arrarr = [arr];
