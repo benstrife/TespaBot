@@ -4,9 +4,8 @@ var fetch = require('node-fetch');
 const token = process.env.DISCORD_TOKEN;
 // GOOGLE AUTH
 var fs = require('fs');
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-    process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com-nodejs-quickstart.json';
+var TOKEN_DIR = process.env.HOMEDIR + '/.credentials/';
+var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com.json';
 var google = require('googleapis');
 var sheets = google.sheets('v4');
 var OAuth2 = google.auth.OAuth2;
@@ -15,12 +14,12 @@ var oauth2Client = new OAuth2(
    process.env.GOOGLE_CLIENT_SECRET,
    process.env.GOOGLE_CALLBACK
 );
-fs.readFile(TOKEN_PATH, function(err, token) {
+fs.readFile(TOKEN_PATH, function(err, googleToken) {
     if (err) {
-      console.log('lmao get new token');
-    } else {
-      oauth2Client.credentials = JSON.parse(token);
-    }
+	  console.log('You don\'t have a Google Token. Please call \'node GTokenInit.js\' to create a token.');
+	  process.exit();
+	}	  
+	oauth2Client.credentials = JSON.parse(googleToken);
 });
 
 module.exports = {
@@ -178,6 +177,7 @@ module.exports = {
         }, function(err, response) {
             if(err){ console.log('The API returned an error: ' + err); }
             console.log('Appended Reschedule command to doc.');
+			message.reply('Reschedule request recieved! Waiting on opponent approval or rejection');
         });
     }
 };
