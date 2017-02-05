@@ -145,6 +145,38 @@ module.exports = {
 			}
 		);
 	},
+
+	removeRoles: function (message){
+		var msgGuild = message.channel.guild;
+		var guildUser = message.channel.guild.user;
+		sheets.spreadsheets.values.get({
+			auth: oauth2Client,
+			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+			range: 'Matches!A2:B5',
+			}, function(err, response) {
+				if (err) {
+					console.log('The API returned an error: ' + err);
+				}
+				var rows = response.values;
+				if(rows.length == 0)
+				{
+					console.log('No data found');
+				} else {
+					for (var i = 0; i < rows.length; i++) {
+						var row = rows[i];
+						for(var j = 0; j <= 1; j++)
+						{
+							guildUser.removeRole({ name: row[j]})
+								.then(role => {
+									console.log(`Removed role ${role}`); 
+								})
+								.catch(console.error);	
+						}
+					}
+				}
+			}
+		);
+	},
 	
 	createChannels: function (message) {
 		var msgGuild = message.channel.guild;
