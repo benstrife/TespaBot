@@ -186,6 +186,41 @@ module.exports = {
 			}
 		);
 	},
+	
+	deleteChannels: function (message, params) {
+		console.log('Currently deleting channels');
+		var msgGuild = message.channel.guild;
+		sheets.spreadsheets.values.get({
+			auth: oauth2Client,
+			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+			range: 'Matches!A2:B5',
+		}, function(err, response) {
+			if (err) {
+				console.log('The API returned an error: ' + err);
+			}
+			var rows = response.values;
+			if(rows.length == 0)
+			{
+				console.log('No data found');
+			} else {
+				for (var i = 0; i < rows.length; i++) {
+					var row = rows[i];
+					var channelName = row[0].toLowerCase() + '-vs-' + row[1].toLowerCase();
+					for( var [str, chn] of msgGuild.channels){
+						//console.log('checking ' + channelName)
+						if(channelName == chn.name){
+							console.log('MATCH for ' + channelName);
+							chn.delete()
+								.then(channel => {
+									console.log('Channel \'' + channel.name + '\' has been deleted');
+								})
+								.catch(console.error);
+						}
+					}
+				}
+			}	
+		});				
+	},
     
     getBnet: function (message){
         message.author.fetchProfile()

@@ -223,6 +223,9 @@ function execCommand(message){
       case 'createChannels':
         adminTools.createChannels(message, params);
         break;
+	  case 'deleteChannels':
+		adminTools.deleteChannels(message, params);
+		break;
       /*
       *   Creates roles based on all teams that exist in a google doc.
       *   Doc: https://docs.google.com/spreadsheets/d/193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg/edit#gid=192302676
