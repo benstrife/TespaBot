@@ -2,5 +2,6 @@ vars.env
 quickstart.js
 client_secret.json
 node_modules/
+.credentials
 
 .gitignore

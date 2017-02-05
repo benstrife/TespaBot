@@ -1,3 +1,5 @@
+// DOTENV module
+require('dotenv').config({path: './vars.env'});
 var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
@@ -6,10 +8,17 @@ var googleAuth = require('google-auth-library');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/sheets.googleapis.com-nodejs-quickstart.json
 var SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/spreadsheets'];
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-    process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com-nodejs-quickstart.json';
+var TOKEN_DIR = process.env.HOMEDIR + '/.credentials/';
+var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com.json';
 
+var auth = new googleAuth();
+var oauth2Client = new auth.OAuth2(
+   process.env.GOOGLE_CLIENT_ID,
+   process.env.GOOGLE_CLIENT_SECRET,
+   process.env.GOOGLE_CALLBACK
+);
+
+getNewToken(oauth2Client);
 
 function getNewToken(oauth2Client) {
   var authUrl = oauth2Client.generateAuthUrl({

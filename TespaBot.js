@@ -10,26 +10,24 @@ const token = process.env.DISCORD_TOKEN;
 
 // GOOGLE AUTH
 var fs = require('fs');
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-    process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com-nodejs-quickstart.json';
+var TOKEN_DIR = process.env.HOMEDIR + '/.credentials/';
+var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com.json';
 var google = require('googleapis');
+var googleAuth = require('google-auth-library');
 var sheets = google.sheets('v4');
-var OAuth2 = google.auth.OAuth2;
-var oauth2Client = new OAuth2(
+//var OAuth2 = google.auth.OAuth2;
+var auth = new googleAuth();
+var oauth2Client = new auth.OAuth2(
    process.env.GOOGLE_CLIENT_ID,
    process.env.GOOGLE_CLIENT_SECRET,
    process.env.GOOGLE_CALLBACK
 );
 fs.readFile(TOKEN_PATH, function(err, googleToken) {
     if (err) {
-      console.log('lmao get new token');
-	  var gTokenInit = require('GTokenInit.js');
-	  gTokenInit.getNewToken(oauth2Client);
-    }
-
+	  console.log('You don\'t have a Google Token. Please call \'node GTokenInit.js\' to create a token.');
+	  process.exit();
+	}	  
 	oauth2Client.credentials = JSON.parse(googleToken);
-
 });
 // END GOOGLE AUTH
 
