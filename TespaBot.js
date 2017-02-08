@@ -274,12 +274,12 @@ function execCommand(message){
 }
 
 /*
-* Set Admin Roles from https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=858544516
+* Set Admin Roles from https://docs.google.com/spreadsheets/d/1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y/edit#gid=0
 */
 function initialize(){
 	sheets.spreadsheets.values.get({
 		auth: oauth2Client,
-		spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+		spreadsheetId: '1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y',
 		range: 'Permissions!B2:B',
 		}, function(err, response) {
 			if (err) {
