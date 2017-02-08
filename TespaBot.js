@@ -139,7 +139,7 @@ bot.on('message', message => {
 */
 bot.on('guildMemberAdd', member => {
     member.sendMessage('Welcome to the Tespa Compete Discord server! In order to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
-    var arr = [member.id, member.user.username];
+    var arr = [member.id, member.user.username + '#' + member.user.discriminator];
     var arrarr = [arr];
     console.log('Username: ' + member.user.username + ', ID: ' +member.id);
     sheets.spreadsheets.values.append({
