@@ -4,6 +4,7 @@ require('dotenv').config({path: './vars.env'});
 var fetch = require('node-fetch');
 // discord.js module
 const Discord = require('discord.js');
+
 // create an instance of a Discord Client, and call it bot
 const bot = new Discord.Client();
 const token = process.env.DISCORD_TOKEN;
@@ -69,8 +70,7 @@ bot.on('message', message => {
                     console.log('The API returned an error: ' + err);
                 }
                 var rows = response.values;
-                if(rows == null)
-                {
+                if(rows == null)                {
                     console.log('No data found: No members have been found, please check the sheet.');
                 } else {
                     for (var i = 0; i < rows.length; i++) {
@@ -119,12 +119,6 @@ bot.on('message', message => {
 	{
     execCommand(message);
 	}
-	/*
-    *   Only commands that can be called by approved roles or server owner
-    */
-	if(adminCheck(message)){
-
-	}
 
 	//Break REMOVE
 	if (message.content === 'b')
@@ -160,7 +154,7 @@ bot.on('guildMemberAdd', member => {
 });
 
 /*
-* void parseUserInput(message)
+* void execCommand(message)
 *
 * Parses user input and executes commands if the input was valid.
 * This function assumes that the message started with the PREFIX symbol.
@@ -241,6 +235,17 @@ function execCommand(message){
       case 'addAdmin':
         adminRoles = adminTools.addAdmin(message, adminRoles, params);
         break;
+
+      case 'startWeek':
+        adminTools.assignWeeklyMatches(message);
+        break;
+
+      case 'endWeek':
+        break;
+
+      case 'endTournament':
+        adminTools.deleteRoles(message);
+        break;
     }
   }
 
@@ -283,14 +288,14 @@ function initialize(){
 				console.log('The API returned an error: ' + err);
 			}
 			var rows = response.values;
-			if(rows == null)
-			{
+			if(rows == null)			{
 				console.log('No data found: No Admin Roles');
 			} else {
 				for (var i = 0; i < rows.length; i++) {
 					adminRoles.push(rows[i][0]);
 				}
-                console.log('Admin Roles initialized');
+
+        console.log('Admin Roles initialized');
 			}
 		}
 	);

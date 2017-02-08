@@ -31,12 +31,12 @@ module.exports = {
 			console.log(message.member.voiceChannel.name);
 		}
 	},
-	
+
 	helpQueueStatus: function (message, playersInLine){
 		if(playersInLine.length == 1){message.author.sendMessage('There is ' + playersInLine.length + ' player in the help queue.');}
 		else {message.author.sendMessage('There are ' + playersInLine.length + ' players in the help queue.');}
 	},
-	
+
 	nextInLine: function (message, playersInLine){
 		if(playersInLine.length == 0){
 			message.author.sendMessage('There are no players in the help queue.');
@@ -53,7 +53,7 @@ module.exports = {
 			});
 		return playersInLine;
 	},
-	
+
 	addAdminRole: function (message, adminRoles){
 		var tempAdminArr = [];
 		var index = 0;
@@ -65,25 +65,30 @@ module.exports = {
 			tempAdminArr[index][2] = roles.guild.name;
 			index++;
 		}
-		sheets.spreadsheets.values.append({
-			auth: oauth2Client,
-			spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-			range:'Permissions!A2:C',
-			valueInputOption: 'USER_ENTERED',
-			resource: {
-				range: 'Permissions!A2:C',
-				majorDimension: 'ROWS',
-				values: tempAdminArr
-			}
-			}, function(err, response) {
-				if(err){ console.log('The API returned an error: ' + err); }
+		sheets.spreadsheets.values.append(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+  			range:'Permissions!A2:C',
+  			valueInputOption: 'USER_ENTERED',
+  			resource:
+          {
+      			range: 'Permissions!A2:C',
+      			majorDimension: 'ROWS',
+      			values: tempAdminArr
+      		}
+			},
+      function(err, response) {
+				if(err){
+          console.log('The API returned an error: ' + err);
+        }
 				console.log('Updated admin roles to doc.');
 			}
 		);
 		return adminRoles;
 	},
-	
-	memberPull: function (message){	
+
+	memberPull: function (message){
 		var guild = message.guild;
 		var members = guild.members;
 		var memArray = [];
@@ -93,82 +98,89 @@ module.exports = {
 			for (var [key1, value1] of roles){ roleArray.push(value1.name); }
 			memArray.push([key, value.user.username, roleArray.toString()]);
 		}
-		sheets.spreadsheets.values.update({
-			auth: oauth2Client,
-			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-			range:'Discord Members!A2:C',
-			valueInputOption: 'USER_ENTERED',
-			resource: {
-				range: 'Discord Members!A2:C',
-				majorDimension: 'ROWS',
-				values: memArray
-			}
-			}, function(err, response) {
-				if(err){ console.log('The API returned an error: ' + err); }
+		sheets.spreadsheets.values.update(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  			range:'Discord Members!A2:C',
+  			valueInputOption: 'USER_ENTERED',
+  			resource:
+          {
+    				range: 'Discord Members!A2:C',
+    				majorDimension: 'ROWS',
+    				values: memArray
+    			}
+			},
+      function(err, response) {
+				if(err){
+          console.log('The API returned an error: ' + err);
+        }
 				console.log('Updated members to doc.');
 			}
 		);
 	},
-		
+
 	count: function (message){
 		message.reply('There are currently ' + message.guild.memberCount + ' members in this Guild');
 	},
-	
+
 	createRoles: function (message){
 		var msgGuild = message.channel.guild;
-		sheets.spreadsheets.values.get({
-			auth: oauth2Client,
-			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-			range: 'Matches!A2:B5',
-			}, function(err, response) {
+		sheets.spreadsheets.values.get(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  			range: 'Matches!A2:B5',
+			},
+      function(err, response) {
 				if (err) {
 					console.log('The API returned an error: ' + err);
 				}
 				var rows = response.values;
-				if(rows.length == 0)
-				{
+				if(rows.length == 0){
 					console.log('No data found');
 				} else {
 					for (var i = 0; i < rows.length; i++) {
 						var row = rows[i];
-						for(var j = 0; j <= 1; j++)
-						{
+						for(var j = 0; j <= 1; j++){
 							msgGuild.createRole({ name: row[j]})
 								.then(role => {
-									console.log(`Created role ${role}`); 
+									console.log(`Created role ${role}`);
 								})
-								.catch(console.error);	
+                .catch(console.error);
 						}
 					}
 				}
 			}
 		);
 	},
-	
+
 	createChannels: function (message) {
 		var msgGuild = message.channel.guild;
 		var roles = getRoleArray(msgGuild);
-		sheets.spreadsheets.values.get({
-			auth: oauth2Client,
-			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-			range: 'Matches!A2:B5',
-			}, function(err, response) {
+		sheets.spreadsheets.values.get(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  			range: 'Matches!A2:B5',
+			},
+      function(err, response) {
 				if (err) {
 					console.log('The API returned an error: ' + err);
 				}
 				var rows = response.values;
-				if(rows.length == 0)
-				{
+				if(rows.length == 0){
 					console.log('No data found');
 				} else {
 					for (var i = 0; i < rows.length; i++) {
 						var row = rows[i];
 						var role1 = getRoleID(row[0], roles);
 						var role2 = getRoleID(row[1], roles);
+
 						(function(i, role1, role2){
 							msgGuild.createChannel(row[0] + '-vs-' + row[1], 'text')
 								.then(channel => {
-									console.log(`Created new channel ${channel}`); 
+									console.log(`Created new channel ${channel}`);
 									channel.overwritePermissions(msgGuild.id, {READ_MESSAGES: false});
 									channel.overwritePermissions(role1, {READ_MESSAGES: true});
 									channel.overwritePermissions(role2, {READ_MESSAGES: true});
@@ -179,46 +191,113 @@ module.exports = {
 										})
 										.catch(console.error);
 								})
-								.catch(console.error);	
+								.catch(console.error);
 						})(i, role1, role2);
 					}
 				}
 			}
 		);
 	},
-    
-    getBnet: function (message){
-        message.author.fetchProfile()
-            .then(profile => {
-                var conn = profile.connections;
-                for( var i of conn){
-                    console.log(conn[i].type);
-                }  
-            }).catch(console.log);
-    }
+
+  getBnet: function (message){
+    message.author.fetchProfile()
+      .then(profile => {
+        var conn = profile.connections;
+        for( var i of conn){
+            console.log(conn[i].type);
+        }
+    }).catch(console.log);
+  },
+
+  assignWeeklyMatches: function(message){
+		var msgGuild = message.channel.guild;
+
+    // Create roles
+    sheets.spreadsheets.values.get(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '1tWxffGMc3-kqaLypqd-mXJhYnbkZ5WonPkJghzvV1ME',
+  			range: 'Test Roles!A2:D',
+			},
+      function(err, response) {
+				if (err) {
+					console.log('The API returned an error: ' + err);
+				}
+				var rows = response.values;
+				if(rows.length == 0){
+					console.log('No data found');
+				} else {
+					for (var i = 0; i < rows.length; i++) {
+						var row = rows[i];
+						var discordID = row[2];
+						var roleID = row[3];
+
+            msgGuild.createRole({ name: roleID})
+              .then(role => {
+                console.log("Created role " + roleID);
+                msgGuild.fetchMember(discordID).
+                  then(member => {
+                    member.addRole(role);
+                  });
+              })
+              .catch(console.error);
+					}
+				}
+			}
+		);
+
+    // TODO: Create chat rooms and add role permissions
+
+    message.reply("matches have been created and roles assigned.");
+  },
+
+  deleteRoles: function(message){
+    deleteRolesByTournamentID(message.channel.guild, "47");
+  }
 };
 
 /*
-	Helper functions for createChannels 
+	Helper functions for createChannels
 */
 function updateCell(cellRow, cellValue){
 	var cell = 'Matches!C'+cellRow;
-	sheets.spreadsheets.values.update({
-		auth: oauth2Client,
-		spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-		range:cell,
-		valueInputOption: 'USER_ENTERED',
-		resource: {
-			range: cell,
-			majorDimension: 'ROWS',
-			values: [[cellValue]]
-		}
-		}, function(err, response) {
+	sheets.spreadsheets.values.update(
+    {
+  		auth: oauth2Client,
+  		spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  		range:cell,
+  		valueInputOption: 'USER_ENTERED',
+  		resource:
+        {
+    			range: cell,
+    			majorDimension: 'ROWS',
+    			values: [[cellValue]]
+    		}
+		},
+    function(err, response) {
 			if(err) {
 				console.log('The API returned an error: ' + err);
 			}
 		}
 	);
+}
+
+function deleteRolesByTournamentID(guild, tournamentID){
+  var t_id_length = tournamentID.length;
+
+  var roleArray = Array.from(guild.roles);
+  for(var i = 0; i < roleArray.length; i++){
+    var role = roleArray[i][1];
+
+    // If the role begins with the tournament id, delete it
+    if(role.name.slice(0, t_id_length) == tournamentID){
+      role.delete()
+        .then(r => {
+          console.log("Deleted role " + r);
+        })
+        .catch(console.error);
+    }
+  }
 }
 
 function displayName(member){
