@@ -18,13 +18,14 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
     if (err) {
 	  console.log('You don\'t have a Google Token. Please call \'node GTokenInit.js\' to create a token.');
 	  process.exit();
-	}	  
+	}
 	oauth2Client.credentials = JSON.parse(googleToken);
 });
 
 module.exports = {
 	//Called when a person wants help. Enters a queue
 	helpQueue: function (message, playersInLine){
+
 		for(var index = 0; index < playersInLine.length; index++){
 			if(message.author.id == playersInLine[index].id){
 				index++;
@@ -32,6 +33,7 @@ module.exports = {
 				return playersInLine;
 			}
 		}
+
 		playersInLine.push(message.author);
 		message.reply('You are now position #' + playersInLine.length + ' in queue');
 		return playersInLine;
@@ -56,32 +58,32 @@ module.exports = {
 
     // Retrieve the player's stats for this season
 	  fetch('https://owapi.net/api/v3/u/' + playerName + '-' + playerNum + '/stats')
-    .then(function(res){
-      return res.text();
-    }).then(function(body){
-      // Parse the webpage response as JSON
-      var user = JSON.parse(body);
-      // If they don't have a US account, alert the user
-  		if(user.us == null) {
-  		  message.reply(playerTag + " does not have any games in North America.");
-        return;
-  		}
-  		else {
-  			if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
-  				var mmr = user.us.stats.competitive.overall_stats.comprank;
-  				if(mmr == null){
-  				  message.reply(playerTag + " has not placed in ranked this season.");
-            return
-  				}
-  			}
-  			else {
-  				message.reply(playerTag + "\'s stats cannot be parsed.");
-          return
-  			}
-  		}
+      .then(function(res){
+        return res.text();
+      }).then(function(body){
+        // Parse the webpage response as JSON
+        var user = JSON.parse(body);
+        // If they don't have a US account, alert the user
+    		if(user.us == null) {
+    		  message.reply(playerTag + " does not have any games in North America.");
+          return;
+    		}
+    		else {
+    			if(typeof user.us.stats.competitive.overall_stats != 'undefined') {
+    				var mmr = user.us.stats.competitive.overall_stats.comprank;
+    				if(mmr == null){
+    				  message.reply(playerTag + " has not placed in ranked this season.");
+              return;
+    				}
+    			}
+    			else {
+    				message.reply(playerTag + "\'s stats cannot be parsed.");
+            return;
+    			}
+    		}
 
-  		message.reply(playerTag +'\'s mmr is: ' + mmr);
-    });
+    		message.reply(playerTag +'\'s mmr is: ' + mmr);
+      });
 	},
 
   heroesMMR: function(message, params){
@@ -151,31 +153,34 @@ module.exports = {
     }
 
 		var slicedGMsg = message.content.substring(1).toLowerCase();
-      // Try once within a specific game's command list
-			sheets.spreadsheets.values.get({
+
+    // Try once within a specific game's command list
+		sheets.spreadsheets.values.get(
+      {
 				auth: oauth2Client,
 				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
 				range: rangePrefix + '!A2:B',
-				}, function(err, response) {
-					if (err) {
-						console.log('The API returned an error: ' + err);
-					}
-					var rows = response.values;
-					if(rows.length == 0)
-					{
-						console.log('No data found');
-					} else {
-						for (var i = 0; i < rows.length; i++) {
-							var row = rows[i];
-							if (slicedGMsg === row[0])
-							{
-								message.reply(row[1]);
-                return;
-							}
+			},
+      function(err, response) {
+				if (err) {
+					console.log('The API returned an error: ' + err);
+				}
+
+				var rows = response.values;
+				if(rows.length == 0)				{
+					console.log('No data found');
+				} else {
+					for (var i = 0; i < rows.length; i++) {
+						var row = rows[i];
+						if (slicedGMsg === row[0])
+						{
+							message.reply(row[1]);
+              return;
 						}
 					}
 				}
-			);
+			}
+		);
 	},
 
 	/*
@@ -187,11 +192,13 @@ module.exports = {
 		for(var [id,role] of message.member.roles){
 			teams.push(role.name);
 		}
-		sheets.spreadsheets.values.get({
-			auth: oauth2Client,
-			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
-			range: 'Matches!A2:B',
-			}, function(err, response) {
+		sheets.spreadsheets.values.get(
+      {
+  			auth: oauth2Client,
+  			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  			range: 'Matches!A2:B',
+			},
+      function(err, response) {
 				if (err) {
 					console.log('The API returned an error: ' + err);
 				}
@@ -203,7 +210,7 @@ module.exports = {
 					for (var i = 0; i < rows.length; i++) {
 						var row = rows[i];
 						for(var j = 0; j < teams.length; j++){
-							console.log(row[0] + ' ' + row[1] + ' ' + teams[j] );
+							console.log(row[0] + ' ' + row[1] + ' ' + teams[j]);
 							if (teams[j] == row[0]){
 								message.reply('Your Opponent is: ' + row[1]);
 								foundBoolean = 1;
@@ -220,237 +227,259 @@ module.exports = {
 				}
 			}
 		);
-
-
 	},
 
-    /*
-    * Reschedule
-    */
-    reschedule: function (message, params){
-        //Confirm time is correct format
-        const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
-        var time = message.content.substr(12)
-        var regTime = timeFormat.exec(message.content.substr(12));
-        if(time == 'approve'){
-            rescheduleApproval(message);
-            return;
-        }
-        else if(time == 'reject'){
-            rescheduleReject(message);
-            return;
-        }
-        else if(!regTime){
-            message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)');
-            return;
-        }
+  /*
+  * Reschedule
+  */
+  reschedule: function (message, params){
+    //Confirm time is correct format
+    const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
+    var time = message.content.substr(12)
+    var regTime = timeFormat.exec(message.content.substr(12));
+    if(time == 'approve'){
+        rescheduleApproval(message);
+        return;
+    }
+    else if(time == 'reject'){
+        rescheduleReject(message);
+        return;
+    }
+    else if(!regTime){
+        message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)');
+        return;
+    }
+    var tempArray = [message.channel.name, time];
+    var sheetArray = [tempArray];
 
-        var tempArray = [message.channel.name, time];
-        var sheetArray = [tempArray];
-        sheets.spreadsheets.values.append({
-        auth: oauth2Client,
-        spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-        range:'Reschedule!A2:C',
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-            range: 'Reschedule!A2:C',
-            majorDimension: 'ROWS',
-            values: sheetArray
-        }
-        }, function(err, response) {
-            if(err){ console.log('The API returned an error: ' + err); }
-            console.log('Appended Reschedule command to doc.');
-			message.reply('Reschedule request recieved! Waiting on opponent approval or rejection');
-        });
+    sheets.spreadsheets.values.append(
+    {
+      auth: oauth2Client,
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+      range:'Reschedule!A2:C',
+      valueInputOption: 'USER_ENTERED',
+      resource:
+      {
+        range: 'Reschedule!A2:C',
+        majorDimension: 'ROWS',
+        values: sheetArray
+      }
     },
-
-    /**
-    * Display available commands in reply to calling user.
-    *
-    * PARAMETERS
-    *   message - the message read by the bot
-    *   params - unused in this function
-    */
-    displayCommands: function(message, params){
-      // Grab the channel name immediately
-      let channelName = message.channel.name;
-
-      // Assume we are not in a game-specific channel
-      var rangePrefix = "General";
-
-      // List of commands avaialable
-      var commands = [];
-
-      // Response string to user
-      var res = "commands available in this channel: ";
-
-      // Determine which game-specific channel we're in (if any)
-      switch(channelName.split('_')[0]){
-        case "hearthstone":
-          rangePrefix = "Hearthstone";
-          break;
-        case "heroes":
-          rangePrefix = "HOTS";
-          break;
-        case "overwatch":
-          rangePrefix = "Overwatch";
-          break;
-        default:
-          // Since we assumed we weren't in a game-specific channel, just break
-          break;
+    function(err, response) {
+      if(err){
+        console.log('The API returned an error: ' + err);
       }
 
-      // Retrieve the game-specific sheet we're in (general otherwise)
-      sheets.spreadsheets.values.get({
+      console.log('Appended Reschedule command to doc.');
+	  message.reply('Reschedule request recieved! Waiting on opponent approval or rejection');
+    });
+  },
+
+  /**
+  * Display available commands in reply to calling user.
+  *
+  * PARAMETERS
+  *   message - the message read by the bot
+  *   params - unused in this function
+  */
+  displayCommands: function(message, params){
+    // Grab the channel name immediately
+    let channelName = message.channel.name;
+
+    // Assume we are not in a game-specific channel
+    var rangePrefix = "General";
+
+    // List of commands avaialable
+    var commands = [];
+
+    // Response string to user
+    var res = "commands available in this channel: ";
+
+    // Determine which game-specific channel we're in (if any)
+    switch(channelName.split('_')[0]){
+      case "hearthstone":
+        rangePrefix = "Hearthstone";
+        break;
+      case "heroes":
+        rangePrefix = "HOTS";
+        break;
+      case "overwatch":
+        rangePrefix = "Overwatch";
+        break;
+      default:
+        // Since we assumed we weren't in a game-specific channel, just break
+        break;
+    }
+
+    // Retrieve the game-specific sheet we're in (general otherwise)
+    sheets.spreadsheets.values.get(
+      {
 				auth: oauth2Client,
 				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
 				range: rangePrefix + '!A2:B',
-				},
-        function(err, response) {
-					if (err) {
-						console.log('The API returned an error: ' + err);
-					}
-          // Get an array of rows, each element a command in the sheet
-					var rows = response.values;
+			},
+      function(err, response) {
+				if (err) {
+					console.log('The API returned an error: ' + err);
+				}
+        // Get an array of rows, each element a command in the sheet
+				var rows = response.values;
 
-          // Get commands in the game-specific channel
-          for(var i = 0; i < rows.length; i++){
-            commands.push(rows[i][0]);
-          }
+        // Get commands in the game-specific channel
+        for(var i = 0; i < rows.length; i++){
+          commands.push(rows[i][0]);
+        }
 
-          // If we are in a specific channel, still read off general commands
-          // that were not overridden
-          if(rangePrefix != "General"){
-            sheets.spreadsheets.values.get({
+        // If we are in a specific channel, still read off general commands
+        // that were not overridden
+        if(rangePrefix != "General"){
+          sheets.spreadsheets.values.get(
+            {
       				auth: oauth2Client,
       				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
       				range: 'General!A2:B',
-      				},
-              function(err, response) {
-      					if (err) {
-      						console.log('The API returned an error: ' + err);
-      					}
+    				},
+            function(err, response) {
+    					if (err) {
+    						console.log('The API returned an error: ' + err);
+    					}
 
-      					var rows = response.values;
+    					var rows = response.values;
 
-                for(var i = 0; i < rows.length; i++){
-                  // If the command we are looking at hasn't been logged yet
-                  // (aka not overridden)
-                  if(commands.indexOf(rows[i][0]) == -1){
-                    commands.push(rows[i][0]);
-                  }
+              for(var i = 0; i < rows.length; i++){
+                // If the command we are looking at hasn't been logged yet
+                // (aka not overridden)
+                if(commands.indexOf(rows[i][0]) == -1){
+                  commands.push(rows[i][0]);
                 }
-                // Concatenate all commands to our response string
-                res += commands.join(", ");
+              }
+              // Concatenate all commands to our response string
+              res += commands.join(", ");
 
-                // Reply to the user with our response
-                message.reply(res);
-              });
+              // Reply to the user with our response
+              message.reply(res);
             }
-          }
-        );
+          );
+        }
       }
+    );
+  }
 };
 
 //Helper Functions
 
 function rescheduleApproval(message){
-    sheets.spreadsheets.values.get({
-        auth: oauth2Client,
-        spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-        range: 'Reschedule!A2:C',
-        }, function(err, response) {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            }
-            var rows = response.values;
-            if(rows.length == 0)
-            {
-                console.log('No data found');
-            } else {
-                for (var i = 0; i < rows.length; i++) {
-                    var row = rows[i];
-                    if(message.channel.name == row[0]){
-                        if(row[2] == 'Yes'){
-                            message.reply('Your reschedule has already been approved.');
-                            return;
-                        }
-                        else if(row[2] == 'No'){
-                            message.reply('Your reschedule has been declined previously, we will now approve the reschedule.');
-                        }
-                        var arr = ['Yes'];
-                        var arrarr = [arr];
-                        var index = i+2;
-                        sheets.spreadsheets.values.update({
-                            auth: oauth2Client,
-                            spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-                            range:'Reschedule!C'+index,
-                            valueInputOption: 'USER_ENTERED',
-                            resource: {
-                                range: 'Reschedule!C'+index,
-                                majorDimension: 'ROWS',
-                                values: arrarr
-                            }
-                            }, function(err, response) {
-                                if(err){ console.log('The API returned an error: ' + err); }
-                                console.log('Approved Reschdule to doc.');
-                                message.reply('Your reschedule has been approved.');
-                            });
-                    }
-                }
-                message.reply('You have not submitted a time for rescheduling');
-            }
+  sheets.spreadsheets.values.get(
+    {
+      auth: oauth2Client,
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+      range: 'Reschedule!A2:C',
+    },
+    function(err, response) {
+      if (err) {
+        console.log('The API returned an error: ' + err);
+      }
+      var rows = response.values;
+      if(rows.length == 0){
+        console.log('No data found');
+      } else {
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+            if(message.channel.name == row[0]){
+              if(row[2] == 'Yes'){
+                message.reply('Your reschedule has already been approved.');
+                return;
+              }
+              else if(row[2] == 'No'){
+                message.reply('Your reschedule has been declined previously, we will now approve the reschedule.');
+              }
+
+              var arr = ['Yes'];
+              var arrarr = [arr];
+              var index = i+2;
+
+              sheets.spreadsheets.values.update(
+                {
+                  auth: oauth2Client,
+                  spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+                  range:'Reschedule!C'+index,
+                  valueInputOption: 'USER_ENTERED',
+                  resource:
+                  {
+                    range: 'Reschedule!C'+index,
+                    majorDimension: 'ROWS',
+                    values: arrarr
+                  }
+                },
+                function(err, response) {
+                  if(err){ console.log('The API returned an error: ' + err); }
+                  console.log('Approved Reschdule to doc.');
+                  message.reply('Your reschedule has been approved.');
+                });
+          }
         }
-    );
+        message.reply('You have not submitted a time for rescheduling');
+      }
+    }
+  );
 }
 
 function rescheduleReject(message){
-    sheets.spreadsheets.values.get({
-        auth: oauth2Client,
-        spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-        range: 'Reschedule!A2:C',
-        }, function(err, response) {
-            if (err) {
-                console.log('The API returned an error: ' + err);
+  sheets.spreadsheets.values.get(
+    {
+      auth: oauth2Client,
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+      range: 'Reschedule!A2:C',
+    },
+    function(err, response) {
+      if (err) {
+        console.log('The API returned an error: ' + err);
+      }
+      var rows = response.values;
+      if(rows.length == 0){
+        console.log('No data found');
+      } else {
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          if(message.channel.name == row[0]){
+            if(row[2] == 'Yes'){
+              message.reply('Your reschedule was previously approved, we will now reject your reschedule.');
             }
-            var rows = response.values;
-            if(rows.length == 0)
-            {
-                console.log('No data found');
-            } else {
-                for (var i = 0; i < rows.length; i++) {
-                    var row = rows[i];
-                    if(message.channel.name == row[0]){
-                        if(row[2] == 'Yes'){
-                            message.reply('Your reschedule was previously approved, we will now reject your reschedule.');
-                        }
-                        else if(row[2] == 'No'){
-                            message.reply('Your reschedule has already been rejected. Please notify an admin');
-                            return;
-                        }
-                        var arr = ['No'];
-                        var arrarr = [arr];
-                        var index = i+2;
-                        sheets.spreadsheets.values.update({
-                            auth: oauth2Client,
-                            spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-                            range:'Reschedule!C'+index,
-                            valueInputOption: 'USER_ENTERED',
-                            resource: {
-                                range: 'Reschedule!C'+index,
-                                majorDimension: 'ROWS',
-                                values: arrarr
-                            }
-                            }, function(err, response) {
-                                if(err){ console.log('The API returned an error: ' + err); }
-                                console.log('Approved Reschdule to doc.');
-                                message.reply('Your reschedule has been rejected! Please contact an admin for the next step forward.');
-                                return;
-                            });
-                    }
+            else if(row[2] == 'No'){
+              message.reply('Your reschedule has already been rejected. Please notify an admin');
+              return;
+            }
+
+            var arr = ['No'];
+            var arrarr = [arr];
+            var index = i+2;
+
+            sheets.spreadsheets.values.update(
+              {
+                auth: oauth2Client,
+                spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+                range:'Reschedule!C'+index,
+                valueInputOption: 'USER_ENTERED',
+                resource:
+                {
+                  range: 'Reschedule!C'+index,
+                  majorDimension: 'ROWS',
+                  values: arrarr
                 }
-                message.reply('You have not submitted a time for rescheduling');
-            }
+              },
+              function(err, response) {
+                if(err){
+                  console.log('The API returned an error: ' + err);
+                }
+                console.log('Approved Reschdule to doc.');
+                message.reply('Your reschedule has been rejected! Please contact an admin for the next step forward.');
+                return;
+              }
+            );
+          }
         }
-    );
+      message.reply('You have not submitted a time for rescheduling');
+      }
+    }
+  );
 }
