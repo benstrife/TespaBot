@@ -140,13 +140,13 @@ module.exports = {
 
     switch(channelName.split('_')[0]){
       case "hearthstone":
-        rangePrefix = "HS";
+        rangePrefix = "Hearthstone";
         break;
       case "heroes":
         rangePrefix = "HOTS";
         break;
       case "overwatch":
-        rangePrefix = "OW";
+        rangePrefix = "Overwatch";
         break;
       default:
         break;
@@ -158,8 +158,8 @@ module.exports = {
 		sheets.spreadsheets.values.get(
       {
 				auth: oauth2Client,
-				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-				range: rangePrefix + ' Commands!A2:B',
+				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
+				range: rangePrefix + '!A2:B',
 			},
       function(err, response) {
 				if (err) {
@@ -249,14 +249,13 @@ module.exports = {
         message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)');
         return;
     }
-
     var tempArray = [message.channel.name, time];
     var sheetArray = [tempArray];
 
     sheets.spreadsheets.values.append(
     {
       auth: oauth2Client,
-      spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
       range:'Reschedule!A2:C',
       valueInputOption: 'USER_ENTERED',
       resource:
@@ -272,6 +271,7 @@ module.exports = {
       }
 
       console.log('Appended Reschedule command to doc.');
+	  message.reply('Reschedule request recieved! Waiting on opponent approval or rejection');
     });
   },
 
@@ -298,13 +298,13 @@ module.exports = {
     // Determine which game-specific channel we're in (if any)
     switch(channelName.split('_')[0]){
       case "hearthstone":
-        rangePrefix = "HS";
+        rangePrefix = "Hearthstone";
         break;
       case "heroes":
         rangePrefix = "HOTS";
         break;
       case "overwatch":
-        rangePrefix = "OW";
+        rangePrefix = "Overwatch";
         break;
       default:
         // Since we assumed we weren't in a game-specific channel, just break
@@ -315,8 +315,8 @@ module.exports = {
     sheets.spreadsheets.values.get(
       {
 				auth: oauth2Client,
-				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-				range: rangePrefix + ' Commands!A2:B',
+				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
+				range: rangePrefix + '!A2:B',
 			},
       function(err, response) {
 				if (err) {
@@ -336,8 +336,8 @@ module.exports = {
           sheets.spreadsheets.values.get(
             {
       				auth: oauth2Client,
-      				spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
-      				range: 'General Commands!A2:B',
+      				spreadsheetId: '1YC6gV36uFJTmjFHf4GLZGPcwDA_1UM7IXULZ9WLI1gc',
+      				range: 'General!A2:B',
     				},
             function(err, response) {
     					if (err) {
@@ -372,7 +372,7 @@ function rescheduleApproval(message){
   sheets.spreadsheets.values.get(
     {
       auth: oauth2Client,
-      spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
       range: 'Reschedule!A2:C',
     },
     function(err, response) {
@@ -401,7 +401,7 @@ function rescheduleApproval(message){
               sheets.spreadsheets.values.update(
                 {
                   auth: oauth2Client,
-                  spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+                  spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
                   range:'Reschedule!C'+index,
                   valueInputOption: 'USER_ENTERED',
                   resource:
@@ -415,8 +415,7 @@ function rescheduleApproval(message){
                   if(err){ console.log('The API returned an error: ' + err); }
                   console.log('Approved Reschdule to doc.');
                   message.reply('Your reschedule has been approved.');
-                }
-              });
+                });
           }
         }
         message.reply('You have not submitted a time for rescheduling');
@@ -429,7 +428,7 @@ function rescheduleReject(message){
   sheets.spreadsheets.values.get(
     {
       auth: oauth2Client,
-      spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+      spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
       range: 'Reschedule!A2:C',
     },
     function(err, response) {
@@ -458,7 +457,7 @@ function rescheduleReject(message){
             sheets.spreadsheets.values.update(
               {
                 auth: oauth2Client,
-                spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+                spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
                 range:'Reschedule!C'+index,
                 valueInputOption: 'USER_ENTERED',
                 resource:

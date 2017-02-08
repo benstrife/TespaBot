@@ -133,7 +133,7 @@ bot.on('message', message => {
 */
 bot.on('guildMemberAdd', member => {
     member.sendMessage('Welcome to the Tespa Compete Discord server! In order to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
-    var arr = [member.id, member.user.username];
+    var arr = [member.id, member.user.username + '#' + member.user.discriminator];
     var arrarr = [arr];
     console.log('Username: ' + member.user.username + ', ID: ' +member.id);
     sheets.spreadsheets.values.append({
@@ -217,6 +217,9 @@ function execCommand(message){
       case 'createChannels':
         adminTools.createChannels(message, params);
         break;
+	  case 'deleteChannels':
+		adminTools.deleteChannels(message, params);
+		break;
       /*
       *   Creates roles based on all teams that exist in a google doc.
       *   Doc: https://docs.google.com/spreadsheets/d/193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg/edit#gid=192302676
@@ -276,12 +279,12 @@ function execCommand(message){
 }
 
 /*
-* Set Admin Roles from https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=858544516
+* Set Admin Roles from https://docs.google.com/spreadsheets/d/1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y/edit#gid=0
 */
 function initialize(){
 	sheets.spreadsheets.values.get({
 		auth: oauth2Client,
-		spreadsheetId: '1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw',
+		spreadsheetId: '1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y',
 		range: 'Permissions!B2:B',
 		}, function(err, response) {
 			if (err) {
