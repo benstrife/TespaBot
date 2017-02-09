@@ -160,12 +160,13 @@ module.exports = {
 		var roles = getRoleArray(msgGuild);
 		var tID = params[0];
 		var sheetID = 0;
+		var tName = 0;
 		
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-			range: 'Routing!C2:D'
+			range: 'Routing!A2:D'
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
@@ -174,9 +175,10 @@ module.exports = {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
 					console.log('Looking for: ' + tID + '; currently on ' + row[0]);
-					if(tID == row[0]){
+					if(tID == row[2]){
 						console.log('Match Found');
-						sheetID = row[1];
+						sheetID = row[3];
+						tName = row[0];
 						break;
 					}
 				}
@@ -196,9 +198,11 @@ module.exports = {
 							console.log('The API returned an error: ' + err);
 						}
 						var rows = response.values;
-						if(rows.length == 0)
+						if(!rows)
 						{
-							console.log('No data found');
+							console.log('No data found for !createChannels '+ tID);
+							message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
+							
 						} else {
 							for (var i = 0; i < rows.length; i++) {
 								var row = rows[i];
@@ -211,6 +215,8 @@ module.exports = {
 											channel.overwritePermissions(msgGuild.id, {READ_MESSAGES: false});
 											channel.overwritePermissions(role1, {READ_MESSAGES: true});
 											channel.overwritePermissions(role2, {READ_MESSAGES: true});
+											//Confirm Message
+											message.reply('Your channels are being created for tournament: '+ tName +'; ID: ' + tID);
 											//Pinned introduction message
 											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel with your opponent. If you need to reschedule your match, please talk to your opponent here. When you have come to an agreement on a time, one of the teams please enter the command **!reschedule DD/MM/YY HR:MI** in this chat. The other team then can enter **!reschedule approve** or **!reschedule reject**. If you have any questions, feel free to mention your respective game\'s admins');
 											channel.createInvite({maxAge: 180}) // Create invite; Edit expir time in Secs 604800
@@ -235,12 +241,13 @@ module.exports = {
 		var msgGuild = message.channel.guild;
 		var tID = params[0];
 		var sheetID = 0;
+		var tName = 0;
 		
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-			range: 'Routing!C2:D'
+			range: 'Routing!A2:D'
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
@@ -249,9 +256,10 @@ module.exports = {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
 					console.log('Looking for: ' + tID + '; currently on ' + row[0]);
-					if(tID == row[0]){
+					if(tID == row[2]){
 						console.log('Match Found');
-						sheetID = row[1];
+						sheetID = row[3];
+						tName = row[0];
 						break;
 					}
 				}
@@ -272,9 +280,10 @@ module.exports = {
 						console.log('The API returned an error: ' + err);
 					}
 					var rows = response.values;
-					if(rows.length == 0)
+					if(!rows)
 					{
 						console.log('No data found');
+						message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
 					} else {
 						for (var i = 0; i < rows.length; i++) {
 							var row = rows[i];
@@ -291,6 +300,7 @@ module.exports = {
 								}
 							}
 						}
+						message.reply('Deleting channels for tournament: ' + tName + '; ID: ' + tID);
 					}	
 				});
 			}	
