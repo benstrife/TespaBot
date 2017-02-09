@@ -184,7 +184,7 @@ module.exports = {
     * Reschedule
     */
     reschedule: function (message, params){
-        //Confirm time is correct format
+        //Confirm time is correct format 
         const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
         var time = message.content.substr(12)
         var regTime = timeFormat.exec(message.content.substr(12));
