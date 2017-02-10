@@ -17,7 +17,7 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
     if (err) {
 	  console.log('You don\'t have a Google Token. Please call \'node GTokenInit.js\' to create a token.');
 	  process.exit();
-	}	  
+	}
 	oauth2Client.credentials = JSON.parse(googleToken);
 });
 
@@ -307,50 +307,78 @@ module.exports = {
     }).catch(console.log);
   },
 
-  assignWeeklyMatches: function(message){
-		var msgGuild = message.channel.guild;
+  createRoles: function(message, params){
+    console.log("Creating roles");
+
+    var msgGuild = message.channel.guild;
 
     // Create roles
     sheets.spreadsheets.values.get(
       {
-  			auth: oauth2Client,
-  			spreadsheetId: '1tWxffGMc3-kqaLypqd-mXJhYnbkZ5WonPkJghzvV1ME',
-  			range: 'Test Roles!A2:D',
-			},
+        auth: oauth2Client,
+        spreadsheetId: '1tWxffGMc3-kqaLypqd-mXJhYnbkZ5WonPkJghzvV1ME',
+        range: 'Test Roles!A2:D',
+      },
       function(err, response) {
-				if (err) {
-					console.log('The API returned an error: ' + err);
-				}
-				var rows = response.values;
-				if(rows.length == 0){
-					console.log('No data found');
-				} else {
-					for (var i = 0; i < rows.length; i++) {
-						var row = rows[i];
-						var discordID = row[2];
-						var roleID = row[3];
+        if (err) {
+          console.log('The API returned an error: ' + err);
+        }
+        var rows = response.values;
+        if(rows.length == 0){
+          console.log('No data found');
+        } else {
+          // The bot searches a sheet for a player's info
+          // It assumes the following
+          // - The user's discord ID will be in the THIRD row
+          // - The user's role ID(s) to create will be in the FOURTH row
+          for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var discordID = row[2];
+            var roleIDs = [];
+            var roleIDstr = row[3];
 
-            msgGuild.createRole({ name: roleID})
-              .then(role => {
-                console.log("Created role " + roleID);
-                msgGuild.fetchMember(discordID).
-                  then(member => {
-                    member.addRole(role);
-                  });
-              })
-              .catch(console.error);
-					}
-				}
-			}
-		);
+            var tempStr = "";
+            for(var i = 0; i < roleIDstr.length; i++){
+              if(roleIDstr.charAt(i) != " " && roleIDstr.charAt(i) != ","){
+                tempStr += roleIDstr.charAt(i);
+              }
 
-    // TODO: Create chat rooms and add role permissions
+              if(roleIDstr.charAt(i) == ","){
+                roleIDs.push(tempStr);
+                tempStr = "";
+              }
+            }
 
-    message.reply("matches have been created and roles assigned.");
+            roleIDs.push(tempStr);
+
+            console.log("roleIDs for " + discordID + ": " + roleIDs);
+
+            // Split role ids into multiple strings
+            for(var i = 0; i < roleIDs.length; i++){
+              roleID = roleIDs[i];
+              msgGuild.createRole({ name: roleID})
+                .then(role => {
+                  console.log("Created role " + role);
+                  msgGuild.fetchMember(discordID).
+                    then(member => {
+                      member.addRole(role);
+                    });
+                })
+                .catch(console.error);
+            }
+          }
+        }
+      }
+    );
   },
 
-  deleteRoles: function(message){
-    deleteRolesByTournamentID(message.channel.guild, "47");
+  deleteRoles: function(message, params){
+    if(params.length == 0){
+      message.reply("please provide the tournament ID for the roles to be deleted.");
+    }
+
+    console.log("Deleting roles beginning with " + params[0]);
+    deleteRolesByTournamentID(message.channel.guild, params[0]);
   }
 };
 
