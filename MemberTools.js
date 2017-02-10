@@ -235,19 +235,30 @@ module.exports = {
   reschedule: function (message, params){
     //Confirm time is correct format
     const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
-    var time = message.content.substr(12)
-    var regTime = timeFormat.exec(message.content.substr(12));
-    if(time == 'approve'){
-        rescheduleApproval(message);
-        return;
+
+    if(params[0] == 'approve'){
+      rescheduleApproval(message);
+      return;
     }
-    else if(time == 'reject'){
-        rescheduleReject(message);
-        return;
+    else if(params[0] == 'reject'){
+      rescheduleReject(message);
+      return;
     }
-    else if(!regTime){
-        message.reply('Please enter the date time format correctly (DD/MM/YY 00:00)');
-        return;
+
+    else if(params.length == 0){
+      message.reply('Please enter the date time format correctly: !reschedule DD/MM/YY 00:00');
+      return;
+    }
+
+    var date = params[0]
+    var time = params[1];
+    var regTime = timeFormat.exec(date + " " + time);
+
+    if(!regTime){
+      message.reply('Please enter the date time format correctly !reschedule DD/MM/YY 00:00');
+      console.log('Invalid reschedule request:');
+      console.log('Date: ' + date + "\tTime: " + time);
+      return;
     }
 
     var tempArray = [message.channel.name, time];
@@ -269,6 +280,7 @@ module.exports = {
     function(err, response) {
       if(err){
         console.log('The API returned an error: ' + err);
+        return;
       }
 
       console.log('Appended Reschedule command to doc.');
@@ -415,13 +427,14 @@ function rescheduleApproval(message){
                   if(err){ console.log('The API returned an error: ' + err); }
                   console.log('Approved Reschdule to doc.');
                   message.reply('Your reschedule has been approved.');
+                  return;
                 }
-              });
+              );
+            }
           }
         }
         message.reply('You have not submitted a time for rescheduling');
       }
-    }
   );
 }
 
@@ -445,9 +458,11 @@ function rescheduleReject(message){
           if(message.channel.name == row[0]){
             if(row[2] == 'Yes'){
               message.reply('Your reschedule was previously approved, we will now reject your reschedule.');
+              return;
             }
             else if(row[2] == 'No'){
               message.reply('Your reschedule has already been rejected. Please notify an admin');
+              return;
               return;
             }
 
