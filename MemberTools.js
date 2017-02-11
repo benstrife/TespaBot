@@ -235,7 +235,12 @@ module.exports = {
   reschedule: function (message, params){
     //Confirm time is correct format
     const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
-
+	//Checks to see if the room is a match chat channel
+	if(!message.channel.name.includes('-vs-')){
+		console.log('Wrong room');
+		return;
+	}
+	/*
     if(params[0] == 'approve'){
       rescheduleApproval(message);
       return;
@@ -243,7 +248,7 @@ module.exports = {
     else if(params[0] == 'reject'){
       rescheduleReject(message);
       return;
-    }
+    }*/
 
     else if(params.length == 0){
       message.reply('Please enter the date time format correctly: !reschedule DD/MM/YY 00:00');
@@ -261,7 +266,7 @@ module.exports = {
       return;
     }
 
-    var tempArray = [message.channel.name, time];
+    var tempArray = [message.channel.name, date + ' ' + time];
     var sheetArray = [tempArray];
 
     sheets.spreadsheets.values.append(

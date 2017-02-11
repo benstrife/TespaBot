@@ -222,7 +222,7 @@ module.exports = {
 									message.reply('There are missing roles. Please make sure that you have called !createRoles on the correct tournament and that your player data tab is complete and current. No role: ' + tID + row[2] + ' OR ' + tID + row[5]);
 									return;
 								}
-								(function(i, role1, role2){
+								(function(i, role1, role2, row, tName){
 									msgGuild.createChannel(row[0] + '-vs-' + row[3], 'text')
 										.then(channel => {
 											console.log(`Created new channel ${channel}`); 
@@ -232,7 +232,7 @@ module.exports = {
 											//Confirm Message
 											message.reply('Your channels are being created for tournament: '+ tName +'; ID: ' + tID);
 											//Pinned introduction message
-											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel with your opponent. If you need to reschedule your match, please talk to your opponent here. When you have come to an agreement on a time, one of the teams please enter the command **!reschedule DD/MM/YY HR:MI** in this chat. The other team then can enter **!reschedule approve** or **!reschedule reject**. If you have any questions, feel free to mention the '+game+' admins.')
+											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel for '+ tName +'. Please notify the admins if you need a reschedule by typing the command: **!reschedule DD/MM/YY HR:MI** in this chat. If you have any questions, feel free to mention the '+game+' admins.')
 												.then(newMsg => {newMsg.pin();})
 												.catch(console.error);
 											channel.createInvite({maxAge: 180}) // Create invite; Edit expir time in Secs 604800
@@ -243,7 +243,7 @@ module.exports = {
 												.catch(console.error);
 										})
 										.catch(console.error);	
-								})(i, role1, role2);
+								})(i, role1, role2, row, tName);
 							}
 						}
 					});

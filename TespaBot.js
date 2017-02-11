@@ -41,6 +41,7 @@ var adminRoles = [];
 const PREFIX = '!';
 var playersInLine = [];
 const btrId = '210605555998392321';
+const TGDiscord = '178940957985603584';
 
 //When Bot is ready to work
 bot.on('ready', () => {
@@ -52,6 +53,7 @@ bot.on('ready', () => {
 * When a message is typed in a guild that bot is in
 */
 bot.on('message', message => {
+	if(message.channel.guild.id == TGDiscord){return;}
 	if(bot.user.id === message.author.id) return;
 	if(message.channel.type == 'group' || message.channel.type == 'voice') return;
     /*
@@ -132,6 +134,7 @@ bot.on('message', message => {
 * Whenever a user joins a guild
 */
 bot.on('guildMemberAdd', member => {
+	if(member.guild.id == TGDiscord)return;
     member.sendMessage('Welcome to the Tespa Compete Discord server! In order to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
     var arr = [member.id, member.user.username + '#' + member.user.discriminator];
     var arrarr = [arr];
