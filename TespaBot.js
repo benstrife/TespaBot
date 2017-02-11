@@ -27,7 +27,7 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
     if (err) {
 	  console.log('You don\'t have a Google Token. Please call \'node GTokenInit.js\' to create a token.');
 	  process.exit();
-	}	  
+	}
 	oauth2Client.credentials = JSON.parse(googleToken);
 });
 // END GOOGLE AUTH
@@ -239,15 +239,8 @@ function execCommand(message){
         adminRoles = adminTools.addAdmin(message, adminRoles, params);
         break;
 
-      case 'startWeek':
-        adminTools.assignWeeklyMatches(message);
-        break;
-
-      case 'endWeek':
-        break;
-
       case 'endTournament':
-        adminTools.deleteRoles(message);
+        adminTools.deleteRoles(message, params);
         break;
     }
   }
