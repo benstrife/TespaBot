@@ -405,6 +405,34 @@ module.exports = {
 
     console.log("Deleting roles beginning with " + params[0]);
     deleteRolesByTournamentID(message.channel.guild, params[0]);
+  },
+	  
+  getEmails: function(message, params){
+	var msgGuild = message.channel.guild;
+	msgGuild.fetchMembers()
+	.then(guild => {
+		var memberArray = [];
+		for(var [id, member] of guild.members){
+			member.sendMessage('Welcome to the Tespa Compete Discord server! I\'m the friendly neighborhood TespaBot. I am here to provide you with automated features like weekly match channels and much more. In order for you to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
+			memberArray.push([member.id, member.user.username + '#' + member.user.discriminator]);
+			console.log('Username: ' + member.user.username + ', ID: ' +member.id);
+		}
+		sheets.spreadsheets.values.append({
+			auth: oauth2Client,
+			spreadsheetId: '1Vu9oW3rR7rMbEoD5wPy2sqUstKP8-G-BpfoZ2wb46Oc',
+			range:'Members!A2:C',
+			valueInputOption: 'USER_ENTERED',
+			resource: {
+				range: 'Members!A2:C',
+				majorDimension: 'ROWS',
+				values: memberArray
+			}
+			}, function(err, response) {
+				if(err){ console.log('The API returned an error: ' + err); }
+				console.log('Appended new member id & username command to doc.');
+			});
+	})
+	.catch(console.error);
   }
 };
 
