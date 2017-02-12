@@ -41,6 +41,7 @@ var adminRoles = [];
 const PREFIX = '!';
 var playersInLine = [];
 const competeID = '227629384104804352';
+const btrID = '279340623310356480';
 const TGDiscord = '178940957985603584';
 
 //When Bot is ready to work
@@ -329,6 +330,7 @@ function assignRole(message){
 	var email = message.content;
 	var author = message.author;
 	var competeGuild = getCompeteGuild();
+	console.log('Starting assignRole' + competeGuild);
 	sheets.spreadsheets.values.get({
 		auth: oauth2Client,
 		spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
@@ -341,13 +343,21 @@ function assignRole(message){
 		if(rows == null)			{
 			console.log('No data found: No tournaments found');
 		} else {
+			console.log('give me the confirm');
 			for (var i = 0; i < rows.length; i++) {
+				var row = rows[i];
+				console.log(row[6]);
 				if (row[6]){
-					activeTourn.push(rows);
+					activeTourn.push(rows[i]);
+					console.log('1: Active: ' + row[6]);
 				}	
 			}
-			if(activeTourn == []) return;
+			if(activeTourn == []) {
+				console.log('didnt find an active tournament');
+				return;
+			}
 			for(var tourn of activeTourn){
+				console.log('in activeTourn' + tourn);
 				(function(tourn){
 					sheets.spreadsheets.values.get({
 						auth: oauth2Client,
@@ -359,22 +369,27 @@ function assignRole(message){
 						}
 						var rows = response.values;
 						if(rows == null)			{
-							console.log('No data found: No player data found for '+tourn[0]+' ID: '+row[2]);
+							console.log('No data found: No player data found for '+tourn[0]);
 						} else {
+							console.log('In tournament: ' + tourn[0]);
 							for(j = 0; j < rows.length; j++){
-								if(email == rows[1]){
+								var row = rows[j];
+								if(email == row[1]){
+									console.log('Found email in: ' + tourn[0] + ' EMail: ' + email);
 									var currectRole;
 									for(var [key,role] of competeGuild.roles){
-										if(role.name == tourn[2]+rows[2]){
+										if(role.name == tourn[2]+row[2]){
 											currectRole = key;
+											console.log('key is ' + key);
 											break;
 										}
 									}
 									if(!currectRole){
-										console.log('No role created called: ' + tourn[2]+rows[2]);
+										console.log('No role created called: ' + tourn[2]+row[2]);
 									}
 									else{
 										(function(currectRole){
+											console.log('here');
 											competeGuild.fetchMember(author)
 											.then(member => {
 												member.addRole(currectRole)
@@ -397,8 +412,10 @@ function assignRole(message){
 
 function getCompeteGuild(){
 	var guilds = bot.guilds;
-	for(var [key,guild] in guilds){
-		if(guild.id == competeID)
+	for(var [key,guild] of guilds){
+		console.log('Key: '+key+' guild id: ' + guild.id + ' guild: ' + guild);
+		//if(guild.id == competeID)
+		if(guild.id == btrID)
 			return guild;
 	}
 }
