@@ -40,7 +40,9 @@ var memberTools = require('./MemberTools.js');
 var adminRoles = [];
 const PREFIX = '!';
 var playersInLine = [];
-const btrId = '210605555998392321';
+const competeID = '227629384104804352';
+const btrID = '279340623310356480';
+const TGDiscord = '178940957985603584';
 
 //When Bot is ready to work
 bot.on('ready', () => {
@@ -52,6 +54,7 @@ bot.on('ready', () => {
 * When a message is typed in a guild that bot is in
 */
 bot.on('message', message => {
+	//if(message.channel.guild.id == TGDiscord){return;}
 	if(bot.user.id === message.author.id) return;
 	if(message.channel.type == 'group' || message.channel.type == 'voice') return;
     /*
@@ -63,7 +66,7 @@ bot.on('message', message => {
         */
         sheets.spreadsheets.values.get({
             auth: oauth2Client,
-            spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+            spreadsheetId: '1Vu9oW3rR7rMbEoD5wPy2sqUstKP8-G-BpfoZ2wb46Oc',
             range: 'Members!A2:C',
             }, function(err, response) {
                 if (err) {
@@ -87,7 +90,7 @@ bot.on('message', message => {
                             //Update sheet
                             sheets.spreadsheets.values.update({
                                 auth: oauth2Client,
-                                spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+                                spreadsheetId: '1Vu9oW3rR7rMbEoD5wPy2sqUstKP8-G-BpfoZ2wb46Oc',
                                 range:cell,
                                 valueInputOption: 'USER_ENTERED',
                                 resource: {
@@ -100,6 +103,7 @@ bot.on('message', message => {
                                         console.log('The API returned an error: ' + err);
                                     }
                                     message.reply('Your email has been accepted.')
+									assignRole(message);
                                 }
                             );
                         }
@@ -132,13 +136,14 @@ bot.on('message', message => {
 * Whenever a user joins a guild
 */
 bot.on('guildMemberAdd', member => {
-    member.sendMessage('Welcome to the Tespa Compete Discord server! In order to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
+	if(member.guild.id == TGDiscord)return;
+    member.sendMessage('Welcome to the Tespa Compete Discord server! I\'m the friendly neighborhood TespaBot. I am here to provide you with automated features like weekly match channels and much more. In order for you to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
     var arr = [member.id, member.user.username + '#' + member.user.discriminator];
     var arrarr = [arr];
     console.log('Username: ' + member.user.username + ', ID: ' +member.id);
     sheets.spreadsheets.values.append({
         auth: oauth2Client,
-        spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+        spreadsheetId: '1Vu9oW3rR7rMbEoD5wPy2sqUstKP8-G-BpfoZ2wb46Oc',
         range:'Members!A2:C',
         valueInputOption: 'USER_ENTERED',
         resource: {
@@ -242,6 +247,9 @@ function execCommand(message){
       case 'endTournament':
         adminTools.deleteRoles(message, params);
         break;
+	  case 'getEmails':	
+		adminTools.getEmails(message, params);
+		break;
     }
   }
 
@@ -312,6 +320,132 @@ function adminCheck(message){
 	}
 	return false;
 }
+
+/*
+* Assigns roles to user in Compete Discord after they respond to the PM with their email
+* Don't use message.reply because this is the user's DM
+*/
+function assignRole(message){
+	var activeTourn = [];
+	var email = message.content;
+	var author = message.author;
+	var competeGuild = getCompeteGuild();
+	console.log('Starting assignRole' + competeGuild);
+	sheets.spreadsheets.values.get({
+		auth: oauth2Client,
+		spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
+		range: 'Routing!A2:G',
+	}, function(err, response) {
+		if (err) {
+			console.log('The API returned an error: ' + err);
+		}
+		var rows = response.values;
+		if(rows == null)			{
+			console.log('No data found: No tournaments found');
+		} else {
+			console.log('give me the confirm');
+			for (var i = 0; i < rows.length; i++) {
+				var row = rows[i];
+				console.log(row[6]);
+				if (row[6]){
+					activeTourn.push(rows[i]);
+					console.log('1: Active: ' + row[6]);
+				}	
+			}
+			if(activeTourn == []) {
+				console.log('didnt find an active tournament');
+				return;
+			}
+			for(var tourn of activeTourn){
+				console.log('in activeTourn' + tourn);
+				(function(tourn){
+					sheets.spreadsheets.values.get({
+						auth: oauth2Client,
+						spreadsheetId: tourn[3],
+						range: 'Player Data!A2:C',
+					}, function(err, response) {
+						if (err) {
+							console.log('The API returned an error: ' + err);
+						}
+						var rows = response.values;
+						if(rows == null)			{
+							console.log('No data found: No player data found for '+tourn[0]);
+						} else {
+							console.log('In tournament: ' + tourn[0]);
+							for(j = 0; j < rows.length; j++){
+								var row = rows[j];
+								if(email == row[1]){
+									console.log('Found email in: ' + tourn[0] + ' EMail: ' + email);
+									var currectRole;
+									for(var [key,role] of competeGuild.roles){
+										if(role.name == tourn[2]+row[2]){
+											currectRole = key;
+											console.log('key is ' + key);
+											break;
+										}
+									}
+									if(!currectRole){
+										console.log('No role created called: ' + tourn[2]+row[2]);
+									}
+									else{
+										(function(currectRole){
+											console.log('here');
+											competeGuild.fetchMember(author)
+											.then(member => {
+												member.addRole(currectRole)
+												.then(roledMember => console.log(`Gave Role to ${roledMember.user.username}`))
+												.catch(console.error);
+											})
+											.catch(console.error);
+										})(currectRole);
+									}
+									
+								}
+							}
+						}
+					});
+				})(tourn);
+			}
+		}
+	});
+}
+
+function getCompeteGuild(){
+	var guilds = bot.guilds;
+	for(var [key,guild] of guilds){
+		console.log('Key: '+key+' guild id: ' + guild.id + ' guild: ' + guild);
+		//if(guild.id == competeID)
+		if(guild.id == btrID)
+			return guild;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Log Bot into Discord.
 bot.login(token);

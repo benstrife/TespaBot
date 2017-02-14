@@ -101,7 +101,7 @@ module.exports = {
 		sheets.spreadsheets.values.update(
       {
   			auth: oauth2Client,
-  			spreadsheetId: '193MVydHAOMDsEt4duSBg4-ZETTk-IUdsxYxoO_-HrBg',
+  			spreadsheetId: '1gaR4hnAU3MQ2D2OYVwDQy7plwybC50ygNNLWw5dbUk0',
   			range:'Discord Members!A2:C',
   			valueInputOption: 'USER_ENTERED',
   			resource:
@@ -160,12 +160,19 @@ module.exports = {
 		var roles = getRoleArray(msgGuild);
 		var tID = params[0];
 		var sheetID = 0;
+		var tName = 0;
+		var game = 0;
+		
+		if(!tID){
+			message.reply('Please include a tournament ID (ex: !createChannels 10). Tournament IDs can be found in this doc: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
+			return;
+		}
 		
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-			range: 'Routing!C2:D'
+			range: 'Routing!A2:D'
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
@@ -174,9 +181,11 @@ module.exports = {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
 					console.log('Looking for: ' + tID + '; currently on ' + row[0]);
-					if(tID == row[0]){
+					if(tID == row[2]){
 						console.log('Match Found');
-						sheetID = row[1];
+						sheetID = row[3];
+						tName = row[0];
+						game = row[1];
 						break;
 					}
 				}
@@ -196,23 +205,36 @@ module.exports = {
 							console.log('The API returned an error: ' + err);
 						}
 						var rows = response.values;
-						if(rows.length == 0)
+						if(!rows)
 						{
-							console.log('No data found');
+							console.log('No data found for !createChannels '+ tID);
+							message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
+							
 						} else {
 							for (var i = 0; i < rows.length; i++) {
 								var row = rows[i];
-								var role1 = getRoleID(tID + row[2], roles);
-								var role2 = getRoleID(tID + row[5], roles);
-								(function(i, role1, role2){
+								try {
+									var role1 = getRoleID(tID + row[2], roles);
+									var role2 = getRoleID(tID + row[5], roles);
+								}
+								catch (error){
+									console.log('No role: ' + tID + row[2] + ' OR ' + tID + row[5]);
+									message.reply('There are missing roles. Please make sure that you have called !createRoles on the correct tournament and that your player data tab is complete and current. No role: ' + tID + row[2] + ' OR ' + tID + row[5]);
+									return;
+								}
+								(function(i, role1, role2, row, tName){
 									msgGuild.createChannel(row[0] + '-vs-' + row[3], 'text')
 										.then(channel => {
 											console.log(`Created new channel ${channel}`); 
 											channel.overwritePermissions(msgGuild.id, {READ_MESSAGES: false});
 											channel.overwritePermissions(role1, {READ_MESSAGES: true});
 											channel.overwritePermissions(role2, {READ_MESSAGES: true});
+											//Confirm Message
+											message.reply('Your channels are being created for tournament: '+ tName +'; ID: ' + tID);
 											//Pinned introduction message
-											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel with your opponent. If you need to reschedule your match, please talk to your opponent here. When you have come to an agreement on a time, one of the teams please enter the command **!reschedule DD/MM/YY HR:MI** in this chat. The other team then can enter **!reschedule approve** or **!reschedule reject**. If you have any questions, feel free to mention your respective game\'s admins');
+											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel for '+ tName +'. Please notify the admins if you need a reschedule by typing the command: **!reschedule DD/MM/YY HR:MI** in this chat. If you have any questions, feel free to mention the '+game+' admins.')
+												.then(newMsg => {newMsg.pin();})
+												.catch(console.error);
 											channel.createInvite({maxAge: 180}) // Create invite; Edit expir time in Secs 604800
 												.then(invite => {
 													console.log(`Created invite ${invite}`);
@@ -221,7 +243,7 @@ module.exports = {
 												.catch(console.error);
 										})
 										.catch(console.error);	
-								})(i, role1, role2);
+								})(i, role1, role2, row, tName);
 							}
 						}
 					});
@@ -235,12 +257,13 @@ module.exports = {
 		var msgGuild = message.channel.guild;
 		var tID = params[0];
 		var sheetID = 0;
+		var tName = 0;
 		
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
-			range: 'Routing!C2:D'
+			range: 'Routing!A2:D'
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
@@ -249,9 +272,10 @@ module.exports = {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
 					console.log('Looking for: ' + tID + '; currently on ' + row[0]);
-					if(tID == row[0]){
+					if(tID == row[2]){
 						console.log('Match Found');
-						sheetID = row[1];
+						sheetID = row[3];
+						tName = row[0];
 						break;
 					}
 				}
@@ -272,9 +296,10 @@ module.exports = {
 						console.log('The API returned an error: ' + err);
 					}
 					var rows = response.values;
-					if(rows.length == 0)
+					if(!rows)
 					{
 						console.log('No data found');
+						message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
 					} else {
 						for (var i = 0; i < rows.length; i++) {
 							var row = rows[i];
@@ -291,6 +316,7 @@ module.exports = {
 								}
 							}
 						}
+						message.reply('Deleting channels for tournament: ' + tName + '; ID: ' + tID);
 					}	
 				});
 			}	
@@ -379,6 +405,34 @@ module.exports = {
 
     console.log("Deleting roles beginning with " + params[0]);
     deleteRolesByTournamentID(message.channel.guild, params[0]);
+  },
+	  
+  getEmails: function(message, params){
+	var msgGuild = message.channel.guild;
+	msgGuild.fetchMembers()
+	.then(guild => {
+		var memberArray = [];
+		for(var [id, member] of guild.members){
+			member.sendMessage('Welcome to the Tespa Compete Discord server! I\'m the friendly neighborhood TespaBot. I am here to provide you with automated features like weekly match channels and much more. In order for you to recieve full discord permissions, please reply to me with the email you used on compete.tespa.org');
+			memberArray.push([member.id, member.user.username + '#' + member.user.discriminator]);
+			console.log('Username: ' + member.user.username + ', ID: ' +member.id);
+		}
+		sheets.spreadsheets.values.append({
+			auth: oauth2Client,
+			spreadsheetId: '1Vu9oW3rR7rMbEoD5wPy2sqUstKP8-G-BpfoZ2wb46Oc',
+			range:'Members!A2:C',
+			valueInputOption: 'USER_ENTERED',
+			resource: {
+				range: 'Members!A2:C',
+				majorDimension: 'ROWS',
+				values: memberArray
+			}
+			}, function(err, response) {
+				if(err){ console.log('The API returned an error: ' + err); }
+				console.log('Appended new member id & username command to doc.');
+			});
+	})
+	.catch(console.error);
   }
 };
 
