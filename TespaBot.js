@@ -48,6 +48,7 @@ const TGDiscord = '178940957985603584';
 bot.on('ready', () => {
   console.log('I am ready!');
   initialize();
+  authorize();
 });
 
 /*
@@ -247,7 +248,7 @@ function execCommand(message){
       case 'endTournament':
         adminTools.deleteRoles(message, params);
         break;
-	  case 'getEmails':	
+	  case 'getEmails':
 		adminTools.getEmails(message, params);
 		break;
     }
@@ -305,6 +306,21 @@ function initialize(){
 	);
 }
 
+function authorize(){
+  var oauth = new Discord.OAuth2Application(bot,
+    {
+      "id": process.env.DISCORD_ID,
+      "name": "OAuth2 Test",
+      "description": "none",
+      "icon": null,
+      "iconURL": null,
+      "rpcOrigins": null
+    }
+  );
+  console.log(oauth);
+
+}
+
 /*
 *	Checks to see if the messenge is from an approved role or is the owner of the guild
 */
@@ -350,7 +366,7 @@ function assignRole(message){
 				if (row[6]){
 					activeTourn.push(rows[i]);
 					console.log('1: Active: ' + row[6]);
-				}	
+				}
 			}
 			if(activeTourn == []) {
 				console.log('didnt find an active tournament');
@@ -399,7 +415,7 @@ function assignRole(message){
 											.catch(console.error);
 										})(currectRole);
 									}
-									
+
 								}
 							}
 						}

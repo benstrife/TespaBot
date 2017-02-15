@@ -154,7 +154,7 @@ module.exports = {
 			}
 		);
 	},
-	
+
 	createChannels: function (message, params) {
 		var msgGuild = message.channel.guild;
 		var roles = getRoleArray(msgGuild);
@@ -162,12 +162,12 @@ module.exports = {
 		var sheetID = 0;
 		var tName = 0;
 		var game = 0;
-		
+
 		if(!tID){
 			message.reply('Please include a tournament ID (ex: !createChannels 10). Tournament IDs can be found in this doc: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
 			return;
 		}
-		
+
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
@@ -176,7 +176,7 @@ module.exports = {
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
-			if(rows.length == 0){ console.log('No data found');} 
+			if(rows.length == 0){ console.log('No data found');}
 			else {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
@@ -189,7 +189,7 @@ module.exports = {
 						break;
 					}
 				}
-				
+
 				// Do the creating of channels
 				if(sheetID == 0){
 					console.log('No tournament sheet ID was found for ' + tID);
@@ -209,7 +209,7 @@ module.exports = {
 						{
 							console.log('No data found for !createChannels '+ tID);
 							message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
-							
+
 						} else {
 							for (var i = 0; i < rows.length; i++) {
 								var row = rows[i];
@@ -225,7 +225,7 @@ module.exports = {
 								(function(i, role1, role2, row, tName){
 									msgGuild.createChannel(row[0] + '-vs-' + row[3], 'text')
 										.then(channel => {
-											console.log(`Created new channel ${channel}`); 
+											console.log(`Created new channel ${channel}`);
 											channel.overwritePermissions(msgGuild.id, {READ_MESSAGES: false});
 											channel.overwritePermissions(role1, {READ_MESSAGES: true});
 											channel.overwritePermissions(role2, {READ_MESSAGES: true});
@@ -242,7 +242,7 @@ module.exports = {
 												})
 												.catch(console.error);
 										})
-										.catch(console.error);	
+										.catch(console.error);
 								})(i, role1, role2, row, tName);
 							}
 						}
@@ -251,14 +251,14 @@ module.exports = {
 			}
 		});
 	},
-	
+
 	deleteChannels: function (message, params) {
 		console.log('Currently deleting channels');
 		var msgGuild = message.channel.guild;
 		var tID = params[0];
 		var sheetID = 0;
 		var tName = 0;
-		
+
 		//Get the correct spreadsheet that matches the param, tournament ID
 		sheets.spreadsheets.values.get({
 			auth: oauth2Client,
@@ -267,7 +267,7 @@ module.exports = {
 		}, function(err, response){
 			if(err){ console.log('The API returned an error: ' + err); }
 			var rows = response.values;
-			if(rows.length == 0){ console.log('No data found');} 
+			if(rows.length == 0){ console.log('No data found');}
 			else {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
@@ -279,14 +279,14 @@ module.exports = {
 						break;
 					}
 				}
-				
+
 				// Do the creating of channels
 				if(sheetID == 0){
 					console.log('No tournament sheet ID was found for ' + tID);
 					message.reply('No tournament sheet ID was found for ' + tID + '. Please check this sheet to confirm that you have the correct information: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
 				}
 				else {
-		
+
 				sheets.spreadsheets.values.get({
 					auth: oauth2Client,
 					spreadsheetId: sheetID,
@@ -317,10 +317,10 @@ module.exports = {
 							}
 						}
 						message.reply('Deleting channels for tournament: ' + tName + '; ID: ' + tID);
-					}	
+					}
 				});
-			}	
-		}});	
+			}
+		}});
 	},
 
   getBnet: function (message){
@@ -406,7 +406,7 @@ module.exports = {
     console.log("Deleting roles beginning with " + params[0]);
     deleteRolesByTournamentID(message.channel.guild, params[0]);
   },
-	  
+
   getEmails: function(message, params){
 	var msgGuild = message.channel.guild;
 	msgGuild.fetchMembers()
@@ -448,13 +448,13 @@ function createChannelsUpdateCell(cellRow, cellValue, sheetID){
 		spreadsheetId: sheetID,
 		range:cell,
 		valueInputOption: 'USER_ENTERED',
-		resource: 
+		resource:
 		{
 			range: cell,
 			majorDimension: 'ROWS',
 			values: [[cellValue]]
 		}
-		}, 
+		},
 	function(err, response) {
 			if(err) {
 				console.log('The API returned an error: ' + err);
