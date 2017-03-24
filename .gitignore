@@ -4,5 +4,9 @@ client_secret.json
 node_modules/
 .credentials/
 
+log/
+error/
+debug/
+
 .gitignore
 ~/

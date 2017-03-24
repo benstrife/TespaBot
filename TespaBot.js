@@ -35,6 +35,7 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
 //Import own methods
 var adminTools = require('./AdminTools.js');
 var memberTools = require('./MemberTools.js');
+var logger = require('./Logger.js');
 
 //Globals
 var adminRoles = [];
@@ -48,7 +49,7 @@ const TGDiscord = '178940957985603584';
 bot.on('ready', () => {
   console.log('I am ready!');
   initialize();
-  authorize();
+  logger.debug("Bot now online.");
 });
 
 /*
@@ -306,21 +307,6 @@ function initialize(){
 	);
 }
 
-function authorize(){
-  var oauth = new Discord.OAuth2Application(bot,
-    {
-      "id": process.env.DISCORD_ID,
-      "name": "OAuth2 Test",
-      "description": "none",
-      "icon": null,
-      "iconURL": null,
-      "rpcOrigins": null
-    }
-  );
-  console.log(oauth);
-
-}
-
 /*
 *	Checks to see if the messenge is from an approved role or is the owner of the guild
 */
@@ -342,6 +328,8 @@ function adminCheck(message){
 * Don't use message.reply because this is the user's DM
 */
 function assignRole(message){
+  logger.debug("Assigning roles to " + message.author.toString());
+
 	var activeTourn = [];
 	var email = message.content;
 	var author = message.author;
@@ -409,7 +397,8 @@ function assignRole(message){
 											competeGuild.fetchMember(author)
 											.then(member => {
 												member.addRole(currectRole)
-												.then(roledMember => console.log(`Gave Role to ${roledMember.user.username}`))
+												.then(roledMember =>
+                          logger.debug("Roles given to " + message.author.toString()))
 												.catch(console.error);
 											})
 											.catch(console.error);
