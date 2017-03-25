@@ -243,6 +243,15 @@ function execCommand(message){
       case 'addAdmin':
         adminRoles = adminTools.addAdmin(message, adminRoles, params);
         break;
+	
+      /*
+      *  Remove roles based on roles created in a google doc.
+      *  Doc: https://docs.google.com/spreadsheets/d/1KFcvgsjI_6eCBoltdD50ddWxeLcIGfRBd6LWcKEI_Uw/edit#gid=858544516
+      *  !removeRoles
+      *  @adminroles in Anywhere
+      */
+      case 'removeRoles':
+	adminTools.removeRoles(message, params);
     }
   }
 
@@ -312,6 +321,18 @@ function adminCheck(message){
 		}
 	}
 	return false;
+}
+/*
+ * Assign nicknames as [<<Acronym>>] <<First Name>> '<<Handle>>'
+ *
+ * Pre-condition: Google Spreadsheet populated with player name, tag, and school acronym
+ */
+function assignNickname(message){
+	var email = message.content;
+	var author = message.author;
+
+	
+	message.member.setNickname("[UCSD] Jeffrey MagicRiceMan");	
 }
 
 // Log Bot into Discord.
