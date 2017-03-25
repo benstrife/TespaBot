@@ -49,7 +49,6 @@ const TGDiscord = '178940957985603584';
 bot.on('ready', () => {
   console.log('I am ready!');
   initialize();
-  logger.debug("Bot now online.");
 });
 
 /*
@@ -285,6 +284,7 @@ function execCommand(message){
 * Set Admin Roles from https://docs.google.com/spreadsheets/d/1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y/edit#gid=0
 */
 function initialize(){
+  logger.log("Initializing bot.");
 	sheets.spreadsheets.values.get({
 		auth: oauth2Client,
 		spreadsheetId: '1fjDR3RertZHtfuO-EJm5zjC-CP7rP8vL-uSD7GOjd7Y',
@@ -300,9 +300,10 @@ function initialize(){
 				for (var i = 0; i < rows.length; i++) {
 					adminRoles.push(rows[i][0]);
 				}
-
         console.log('Admin Roles initialized');
 			}
+
+      logger.log("Initialization complete.");
 		}
 	);
 }

@@ -1,6 +1,8 @@
 require('dotenv').config({path: '/Users/Ben/Desktop/TespaBot/vars.env'});
 
 const token = process.env.DISCORD_TOKEN;
+
+var logger = require('./Logger.js');
 // GOOGLE AUTH
 var fs = require('fs');
 var TOKEN_DIR = process.env.HOMEDIR + '/.credentials/';
@@ -23,6 +25,7 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
 
 module.exports = {
 	assignRoles: function (message){
+    logger.log("Assigning roles.");
 		console.log(displayName(message.member));
 		if(!message.member.voiceChannel){
 			console.log(message.author.username + ' is not in a voice channel for that server');
@@ -33,11 +36,13 @@ module.exports = {
 	},
 
 	helpQueueStatus: function (message, playersInLine){
+    logger.log("Displaying help queue status.");
 		if(playersInLine.length == 1){message.author.sendMessage('There is ' + playersInLine.length + ' player in the help queue.');}
 		else {message.author.sendMessage('There are ' + playersInLine.length + ' players in the help queue.');}
 	},
 
 	nextInLine: function (message, playersInLine){
+    logger.log("Advancing help queue.");
 		if(playersInLine.length == 0){
 			message.author.sendMessage('There are no players in the help queue.');
 			return playersInLine;
@@ -50,11 +55,13 @@ module.exports = {
 		message.member.voiceChannel.createInvite({maxAge: 300})
 			.then(invite => {
 					customer.sendMessage(displayName(message.member) + ' will see you right now in voice channel \'' + message.member.voiceChannel.name + '\' in server \'' + message.channel.guild + '\'\r' + 'Here is an invite to the channel (invite will expire in five minutes): ' + invite.toString());
+          logger.log("Sent help invite to " + customer.username)
 			});
 		return playersInLine;
 	},
 
 	addAdminRole: function (message, adminRoles){
+    logger.log("Adding admin roles.")
 		var tempAdminArr = [];
 		var index = 0;
 		for( var [id, roles] of message.mentions.roles){
@@ -80,8 +87,10 @@ module.exports = {
 			},
       function(err, response) {
 				if(err){
+          logger.error("API error on Google OAuth: " + err);
           console.log('The API returned an error: ' + err);
         }
+        logger.log("Roles successfully updated.");
 				console.log('Updated admin roles to doc.');
 			}
 		);
@@ -89,6 +98,7 @@ module.exports = {
 	},
 
 	memberPull: function (message){
+    logger.log("Pulling members");
 		var guild = message.guild;
 		var members = guild.members;
 		var memArray = [];
@@ -113,18 +123,22 @@ module.exports = {
 			},
       function(err, response) {
 				if(err){
+          logger.error("API error on Google OAuth: " + err);
           console.log('The API returned an error: ' + err);
         }
+        logger.log("Members successfully updated.");
 				console.log('Updated members to doc.');
 			}
 		);
 	},
 
 	count: function (message){
+    logger.log("Counting members in server: " + message.guild.memberCount);
 		message.reply('There are currently ' + message.guild.memberCount + ' members in this Guild');
 	},
 
 	createRoles: function (message){
+    logger.log("Creating roles.");
 		var msgGuild = message.channel.guild;
 		sheets.spreadsheets.values.get(
       {
@@ -134,10 +148,12 @@ module.exports = {
 			},
       function(err, response) {
 				if (err) {
+          logger.error("API error on Google OAuth: " + err);
 					console.log('The API returned an error: ' + err);
 				}
 				var rows = response.values;
 				if(rows.length == 0){
+          logger.error("No data found when creating roles.");
 					console.log('No data found');
 				} else {
 					for (var i = 0; i < rows.length; i++) {
@@ -145,6 +161,7 @@ module.exports = {
 						for(var j = 0; j <= 1; j++){
 							msgGuild.createRole({ name: row[j]})
 								.then(role => {
+                  logger.log(`Created role ${role}`);
 									console.log(`Created role ${role}`);
 								})
                 .catch(console.error);
@@ -156,6 +173,7 @@ module.exports = {
 	},
 
 	createChannels: function (message, params) {
+    logger.log("Creating channels.");
 		var msgGuild = message.channel.guild;
 		var roles = getRoleArray(msgGuild);
 		var tID = params[0];
@@ -164,6 +182,7 @@ module.exports = {
 		var game = 0;
 
 		if(!tID){
+      logger.log("Invalid syntax on createChannels call.");
 			message.reply('Please include a tournament ID (ex: !createChannels 10). Tournament IDs can be found in this doc: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
 			return;
 		}
@@ -174,9 +193,15 @@ module.exports = {
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
 			range: 'Routing!A2:D'
 		}, function(err, response){
-			if(err){ console.log('The API returned an error: ' + err); }
+			if(err){
+        logger.error("API error on Google OAuth: " + err);
+        console.log('The API returned an error: ' + err);
+      }
 			var rows = response.values;
-			if(rows.length == 0){ console.log('No data found');}
+			if(rows.length == 0){
+        logger.error("No data found when creating channels.");
+        console.log('No data found');
+      }
 			else {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
@@ -192,6 +217,7 @@ module.exports = {
 
 				// Do the creating of channels
 				if(sheetID == 0){
+          logger.error("No tournament sheet ID was found for " + tID);
 					console.log('No tournament sheet ID was found for ' + tID);
 					message.reply('No tournament sheet ID was found for ' + tID + '. Please check this sheet to confirm that you have the correct information: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
 				}
@@ -202,11 +228,13 @@ module.exports = {
 						range: 'Weekly Matches!A2:F',
 					}, function(err, response) {
 						if (err) {
+              logger.error("API error on Google OAuth: " + err);
 							console.log('The API returned an error: ' + err);
 						}
 						var rows = response.values;
 						if(!rows)
 						{
+              logger.error("No data found for createChannels call on " + tID);
 							console.log('No data found for !createChannels '+ tID);
 							message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
 
@@ -218,6 +246,7 @@ module.exports = {
 									var role2 = getRoleID(tID + row[5], roles);
 								}
 								catch (error){
+                  logger.error('No role: ' + tID + row[2] + ' OR ' + tID + row[5] + "in createChannels call");
 									console.log('No role: ' + tID + row[2] + ' OR ' + tID + row[5]);
 									message.reply('There are missing roles. Please make sure that you have called !createRoles on the correct tournament and that your player data tab is complete and current. No role: ' + tID + row[2] + ' OR ' + tID + row[5]);
 									return;
@@ -235,9 +264,11 @@ module.exports = {
 											channel.sendMessage('Welcome teams, ' + row[1] + ' & ' + row[4] + '! This is your match chat channel for '+ tName +'. Please notify the admins if you need a reschedule by typing the command: **!reschedule DD/MM/YY HR:MI** in this chat. If you have any questions, feel free to mention the '+game+' admins.')
 												.then(newMsg => {newMsg.pin();})
 												.catch(console.error);
+                      logger.log("Created pinned chat message for " + tName);
 											channel.createInvite({maxAge: 180}) // Create invite; Edit expir time in Secs 604800
 												.then(invite => {
 													console.log(`Created invite ${invite}`);
+                          logger.log(`Created invite ${invite}`);
 													createChannelsUpdateCell(i+2,invite.toString(),sheetID);
 												})
 												.catch(console.error);
@@ -253,6 +284,7 @@ module.exports = {
 	},
 
 	deleteChannels: function (message, params) {
+    logger.log("Deleting channels.");
 		console.log('Currently deleting channels');
 		var msgGuild = message.channel.guild;
 		var tID = params[0];
@@ -265,9 +297,15 @@ module.exports = {
 			spreadsheetId: '1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4',
 			range: 'Routing!A2:D'
 		}, function(err, response){
-			if(err){ console.log('The API returned an error: ' + err); }
+			if(err){
+        logger.error("API error on Google OAuth: " + err);
+        console.log('The API returned an error: ' + err);
+      }
 			var rows = response.values;
-			if(rows.length == 0){ console.log('No data found');}
+			if(rows.length == 0){
+        console.log('No data found');
+        logger.error("No data found in deleteChannels.");
+      }
 			else {
 				for (var i = 0; i < rows.length; i++) {
 					var row = rows[i];
@@ -283,6 +321,7 @@ module.exports = {
 				// Do the creating of channels
 				if(sheetID == 0){
 					console.log('No tournament sheet ID was found for ' + tID);
+          logger.error("No tournament sheet ID was found for " + tID);
 					message.reply('No tournament sheet ID was found for ' + tID + '. Please check this sheet to confirm that you have the correct information: https://docs.google.com/spreadsheets/d/1VxFu1rX1TFa-ILkBrv7Tz2bcQwG1_tjtHDPo8XvBKa4/edit#gid=0');
 				}
 				else {
@@ -293,12 +332,14 @@ module.exports = {
 					range: 'Weekly Matches!A2:F',
 				}, function(err, response) {
 					if (err) {
+            logger.error("API error on Google OAuth: " + err);
 						console.log('The API returned an error: ' + err);
 					}
 					var rows = response.values;
 					if(!rows)
 					{
 						console.log('No data found');
+            logger.error("No data found for tournament " + tName + "; ID: " + tID);
 						message.reply('No data found for tournament: '+ tName + '; ID: '+ tID + ' in doc: https://docs.google.com/spreadsheets/d/'+sheetID);
 					} else {
 						for (var i = 0; i < rows.length; i++) {
@@ -310,6 +351,7 @@ module.exports = {
 									console.log('MATCH for ' + channelName);
 									chn.delete()
 										.then(channel => {
+                      logger.log("Channel \'" + channel.name + "\' has been deleted.");
 											console.log('Channel \'' + channel.name + '\' has been deleted');
 										})
 										.catch(console.error);
@@ -324,6 +366,7 @@ module.exports = {
 	},
 
   getBnet: function (message){
+    logger.log("Fetching B.net account.");
     message.author.fetchProfile()
       .then(profile => {
         var conn = profile.connections;
@@ -334,6 +377,7 @@ module.exports = {
   },
 
   createRoles: function(message, params){
+    logger.log("Creating roles.");
     console.log("Creating roles");
 
     var msgGuild = message.channel.guild;
@@ -347,10 +391,12 @@ module.exports = {
       },
       function(err, response) {
         if (err) {
+          logger.error("API error on Google OAuth: " + err);
           console.log('The API returned an error: ' + err);
         }
         var rows = response.values;
         if(rows.length == 0){
+          logger.error("No data found in createRoles.");
           console.log('No data found');
         } else {
           // The bot searches a sheet for a player's info
@@ -400,14 +446,17 @@ module.exports = {
 
   deleteRoles: function(message, params){
     if(params.length == 0){
+      logger.log("Delete roles missing parameter.");
       message.reply("please provide the tournament ID for the roles to be deleted.");
     }
 
+    logger.log("Deleting roles.");
     console.log("Deleting roles beginning with " + params[0]);
     deleteRolesByTournamentID(message.channel.guild, params[0]);
   },
 
   getEmails: function(message, params){
+    logger.log("Fetching emails.");
 	var msgGuild = message.channel.guild;
 	msgGuild.fetchMembers()
 	.then(guild => {
@@ -428,7 +477,10 @@ module.exports = {
 				values: memberArray
 			}
 			}, function(err, response) {
-				if(err){ console.log('The API returned an error: ' + err); }
+				if(err){
+          console.log('The API returned an error: ' + err);
+          logger.error("API error on Google OAuth: " + err);
+        }
 				console.log('Appended new member id & username command to doc.');
 			});
 	})

@@ -25,6 +25,7 @@ fs.readFile(TOKEN_PATH, function(err, googleToken) {
 module.exports = {
 	//Called when a person wants help. Enters a queue
 	helpQueue: function (message, playersInLine){
+    logger.log("Adding " + message.author.username + " to the help queue.");
 
 		for(var index = 0; index < playersInLine.length; index++){
 			if(message.author.id == playersInLine[index].id){
@@ -40,6 +41,8 @@ module.exports = {
 	},
 
 	overwatchMmr: function(message, params){
+    logger.log("Fetching " + message.author.username + "'s Overwatch MMR.");
+
     // Retrieve player's BattleTag
 		var playerTag = params[0];
 
@@ -87,6 +90,8 @@ module.exports = {
 	},
 
   heroesMMR: function(message, params){
+    logger.log("Fetching " + message.author.username + "'s Heroes MMR.");
+
     // Retrieve player's BattleTag
 		var playerTag = params[0];
     var leagues = ["Master", "Diamond", "Platinum", "Gold", "Silver", "Bronze"];
@@ -135,6 +140,7 @@ module.exports = {
 	},
 
 	googleCommand: function (message, params){
+    logger.log("Executing potential Google command: " + message.content.substring(1));
     let channelName = message.channel.name;
     var rangePrefix = "General";
 
@@ -187,6 +193,7 @@ module.exports = {
 		Finds the team's opponent and sends a reply
 	*/
 	myOpponent: function (message, params){
+    logger.log("Fetching " + message.author.username + "'s opponent.");
 		var teams = [];
 		var foundBoolean;
 		for(var [id,role] of message.member.roles){
@@ -233,6 +240,8 @@ module.exports = {
   * Reschedule
   */
   reschedule: function (message, params){
+    logger.log("Rescheduling " + message.author.username + "'s match.");
+
     //Confirm time is correct format
     const timeFormat = /^[0-2]\d\/[0-3]\d\/\d\d\s[0-2]\d:\d\d/;
 	//Checks to see if the room is a match chat channel
@@ -301,6 +310,7 @@ module.exports = {
   *   params - unused in this function
   */
   displayCommands: function(message, params){
+    logger.log("Displaying valid commands.");
     // Grab the channel name immediately
     let channelName = message.channel.name;
 
