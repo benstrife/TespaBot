@@ -84,7 +84,7 @@ the server whatever you want.
 
 After creating the server, enter the following link into your web browser:
 ```
-https://discordapp.com/oauth2/authorize?client_id=[id]&scope=connections%20bot&permissions=0&response_type=code
+https://discordapp.com/oauth2/authorize?client_id=[id]&scope=bot&permissions=0
 ```
 where you replace [id] with your bot's client ID, which is found at the
 top of your app's Discord developer page. When done properly, a dialogue with
@@ -95,10 +95,12 @@ server and the bot will be added to it.
 
 Inside of a terminal, enter the following command:
 ```
-node TespaBot.js
+./run_bot.sh
 ```
 
 If done properly, the terminal will print "I am ready!", indicating that you have
-successfully set up the bot.
+successfully set up the bot. In the event of a crash or error, the bot will
+continue running. View the error/[current_date].txt file to see more information
+on these errors.
 
 If any of the above is unclear or doesn't work on your machine, message Ben or Zach.

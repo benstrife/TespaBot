@@ -49,6 +49,7 @@ const TGDiscord = '178940957985603584';
 // NOTE: the script will continue running, meaning errors may be harder to find
 process.on('uncaughtException', function(err){
   logger.error("CRASH: " + err);
+  console.log("CRASH: " + err);
   // Uncomment the following if we want the script to stop on error thrown
   //process.exit();
 });
