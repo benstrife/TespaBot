@@ -1,6 +1,8 @@
 require('dotenv').config({path: '/Users/Ben/Desktop/TespaBot/vars.env'});
 // node-fetch module
 var fetch = require('node-fetch');
+var logger = require('./Logger.js');
+
 const token = process.env.DISCORD_TOKEN;
 // GOOGLE AUTH
 var fs = require('fs');

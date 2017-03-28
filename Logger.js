@@ -4,9 +4,15 @@ const LOG_PATH = "log/" + getFileDate() + ".txt";
 const DEBUG_PATH = "debug/" + getFileDate() + ".txt";
 const ERR_PATH = "error/" + getFileDate() + ".txt";
 
-fs.mkdir("log");
-fs.mkdir("debug");
-fs.mkdir("error");
+if(!fs.existsSync("log")){
+  fs.mkdir("log");
+}
+if(!fs.existsSync("debug")){
+  fs.mkdir("debug");
+}
+if(!fs.existsSync("error")){
+  fs.mkdir("error");
+}
 
 module.exports = {
   log: function(message){

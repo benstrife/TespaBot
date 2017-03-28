@@ -45,6 +45,14 @@ const competeID = '227629384104804352';
 const btrID = '279340623310356480';
 const TGDiscord = '178940957985603584';
 
+// If the bot crashes for any reason, log about it here
+// NOTE: the script will continue running, meaning errors may be harder to find
+process.on('uncaughtException', function(err){
+  logger.error("CRASH: " + err);
+  // Uncomment the following if we want the script to stop on error thrown
+  //process.exit();
+});
+
 //When Bot is ready to work
 bot.on('ready', () => {
   console.log('I am ready!');
@@ -274,6 +282,8 @@ function execCommand(message){
     case "help":
       memberTools.displayCommands(message, params);
       break;
+    case "kill-dont-use-in-production":
+      process.exit();
     default:
       memberTools.googleCommand(message, params);
       break;
